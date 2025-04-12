@@ -1,0 +1,16 @@
+module.exports = {
+    content: [
+      "./index.html",
+      "./src/**/*.{js,ts,jsx,tsx}"
+    ],
+    theme: {
+      extend: {
+        colors: {
+          background: "#121826",
+          primary: "#3b82f6",
+        },
+      },
+    },
+    plugins: [],
+  }
+  
