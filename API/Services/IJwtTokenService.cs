@@ -1,3 +1,5 @@
+// Назначение: Генерация JWT токенов после логина.
+
 using System;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;

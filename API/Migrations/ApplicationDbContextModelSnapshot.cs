@@ -110,7 +110,7 @@ namespace API.Migrations
 
                     b.HasIndex("SpecialistId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Review");
                 });
 
             modelBuilder.Entity("API.Models.SpecialistProfile", b =>
@@ -154,7 +154,7 @@ namespace API.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("SpecialistProfiles");
+                    b.ToTable("SpecialistProfile");
                 });
 
             modelBuilder.Entity("API.Models.User", b =>

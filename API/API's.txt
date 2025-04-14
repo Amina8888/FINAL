@@ -1,0 +1,301 @@
+Account
+POST /api/Account/login
+GET /api/Account/me
+POST /api/Account/register-specialist
+POST /api/Account/register-user
+POST /api/Account/logout
+
+Admin
+POST /api/Admin/approve-license/{specialistId}
+POST /api/Admin/reject/{id}
+
+Calendar
+POST /api/Calendar/create-slot
+GET /api/Calendar/my-slots
+GET /api/Calendar/specialist/{id}/available
+DELETE /api/Calendar/remove/{slotId}
+
+Chat
+GET /api/Chat/{consultationId}
+POST /api/Chat/{consultationId}
+
+Client
+GET /api/Client/specialists
+GET /api/Client/specialists/{id}
+POST /api/Client/consultation/request
+GET /api/Client/consultations
+POST /api/Client/consultations/{id}/reschedule
+POST /api/Client/consultations/{id}/confirm
+
+Consultation
+POST /api/Consultation/book
+GET /api/Consultation/my
+POST /api/Consultation/reschedule/{consultationId}
+
+Payment
+POST /api/Payment/create/{consultationId}
+GET /api/Payment/success
+
+Review
+POST /api/Review/add/{specialistId}
+GET /api/Review/check/{consultationId}
+GET /api/Review/specialist/{id}
+
+Specialist
+GET /api/Specialist/profile
+GET /api/Specialist/requests
+POST /api/Specialist/requests/{id}/confirm
+POST /api/Specialist/requests/{id}/reject
+GET /api/Specialist/consultations/history
+POST /api/Specialist/withdraw
+POST /api/Specialist/sync-calendar
+PUT /api/Specialist/update-profile
+POST /api/Specialist/upload-license
+PUT /api/Specialist/paypal
+GET /api/Specialist/calendar
+
+Video
+GET /video/{consultationId}
+
+-----------------------------------------
+1. AccountController.cs ++++++++++ (AccountController, IAuthService, AuthServicee, UserDTO)
+Эндпойнты:
+
+POST /api/Account/login — для авторизации пользователя.
+
+GET /api/Account/me — для получения информации о текущем пользователе.
+
+POST /api/Account/register-specialist — для регистрации специалиста.
+
+POST /api/Account/register-user — для регистрации обычного пользователя.
+
+POST /api/Account/logout — для выхода из системы.
+
+Методы в сервисах:
+
+IAuthService
+
+LoginAsync(string username, string password) — для аутентификации пользователя.
+
+GetCurrentUserInfoAsync(string userId) — для получения информации о текущем пользователе.
+
+RegisterUserAsync(UserDto userDto) — для регистрации пользователя.
+
+RegisterSpecialistAsync(SpecialistDto specialistDto) — для регистрации специалиста.
+
+LogoutAsync() — для выхода пользователя.
+
+-----------------------------------------
+
+2. AdminController.cs ----------
+Эндпойнты:
+
+POST /api/Admin/approve-license/{specialistId} — для одобрения лицензии специалиста.
+
+POST /api/Admin/reject/{id} — для отклонения регистрации или лицензии.
+
+Методы в сервисах:
+
+IAdminService
+
+ApproveSpecialistLicenseAsync(Guid specialistId) — для одобрения лицензии специалиста.
+
+RejectSpecialistAsync(Guid id) — для отклонения специалиста или его лицензии.
+
+-----------------------------------------
+
+3. CalendarController.cs ++++++++++ (createCalendarslotDTO, ICalendarService, CalendarService, CalendarController)
+Эндпойнты:
+
+POST /api/Calendar/create-slot — для создания нового слота для консультации.
+
+GET /api/Calendar/my-slots — для получения всех доступных слотов текущего пользователя.
+
+GET /api/Calendar/specialist/{id}/available — для получения доступных слотов конкретного специалиста.
+
+DELETE /api/Calendar/remove/{slotId} — для удаления слота.
+
+Методы в сервисах:
+
+ICalendarService
+
+CreateCalendarSlotAsync(CalendarSlotDto slotDto) — для создания нового слота.
+
+GetMySlotsAsync(string userId) — для получения слотов текущего пользователя.
+
+GetAvailableSlotsAsync(Guid specialistId) — для получения слотов для конкретного специалиста.
+
+RemoveSlotAsync(Guid slotId) — для удаления слота.
+
+-----------------------------------------
+
+4. ChatController.cs +++++++ (IChatService, ChatService, ChatController, ChatMessageDto)
+Эндпойнты:
+
+GET /api/Chat/{consultationId} — для получения сообщений в чате по консультации.
+
+POST /api/Chat/{consultationId} — для отправки сообщения в чат.
+
+Методы в сервисах:
+
+IChatService
+
+GetMessagesAsync(Guid consultationId) — для получения сообщений в чате.
+
+SendMessageAsync(Guid consultationId, ChatMessageDto messageDto) — для отправки сообщения в чат.
+
+-----------------------------------------
+
+5. ClientController.cs +++++ (ClientController, IClientService, ClientService, SpecialistDto, + BookConsultationDto, RescheduleDto)
+Эндпойнты:
+
+GET /api/Client/specialists — для получения списка всех специалистов.
+
+GET /api/Client/specialists/{id} — для получения информации о специалисте.
+
+POST /api/Client/consultation/request — для запроса на консультацию.
+
+GET /api/Client/consultations — для получения всех консультаций клиента.
+
+POST /api/Client/consultations/{id}/reschedule — для переноса консультации.
+
+POST /api/Client/consultations/{id}/confirm — для подтверждения консультации.
+
+Методы в сервисах:
+
+IClientService
+
+GetSpecialistsAsync() — для получения списка специалистов.
+
+GetSpecialistByIdAsync(Guid id) — для получения данных о специалисте.
+
+RequestConsultationAsync(ConsultationRequestDto consultationRequestDto) — для запроса на консультацию.
+
+GetClientConsultationsAsync(string clientId) — для получения консультаций клиента.
+
+RescheduleConsultationAsync(Guid consultationId, RescheduleDto rescheduleDto) — для переноса консультации.
+
+ConfirmConsultationAsync(Guid consultationId) — для подтверждения консультации.
+
+-----------------------------------------
+
+6. ConsultationController.cs 
+Эндпойнты:
+
+POST /api/Consultation/book — для бронирования консультации.
+
+GET /api/Consultation/my — для получения всех консультаций текущего пользователя.
+
+POST /api/Consultation/reschedule/{consultationId} — для переноса консультации.
+
+Методы в сервисах:
+
+IConsultationService
+
+BookConsultationAsync(BookConsultationDto bookConsultationDto) — для бронирования консультации.
+
+GetMyConsultationsAsync(string userId) — для получения консультаций пользователя.
+
+RescheduleConsultationAsync(Guid consultationId, RescheduleDto rescheduleDto) — для переноса консультации.
+
+-----------------------------------------
+
+7. PaymentController.cs
+Эндпойнты:
+
+POST /api/Payment/create/{consultationId} — для создания платежа за консультацию.
+
+GET /api/Payment/success — для обработки успешного платежа.
+
+Методы в сервисах:
+
+IPayPalService
+
+CreatePaymentAsync(Guid consultationId) — для создания платежа.
+
+HandlePaymentSuccessAsync(string paymentId) — для обработки успешного платежа.
+
+-----------------------------------------
+
+8. ReviewController.cs
+Эндпойнты:
+
+POST /api/Review/add/{specialistId} — для добавления отзыва о специалисте.
+
+GET /api/Review/check/{consultationId} — для проверки, оставлен ли отзыв для консультации.
+
+GET /api/Review/specialist/{id} — для получения всех отзывов о специалисте.
+
+Методы в сервисах:
+
+IReviewService
+
+AddReviewAsync(Guid specialistId, AddReviewDto reviewDto) — для добавления отзыва.
+
+CheckReviewAsync(Guid consultationId) — для проверки отзыва по консультации.
+
+GetReviewsBySpecialistAsync(Guid specialistId) — для получения отзывов о специалисте.
+
+-----------------------------------------
+
+9. SpecialistController.cs
+Эндпойнты:
+
+GET /api/Specialist/profile — для получения профиля специалиста.
+
+GET /api/Specialist/requests — для получения всех запросов на консультацию.
+
+POST /api/Specialist/requests/{id}/confirm — для подтверждения запроса на консультацию.
+
+POST /api/Specialist/requests/{id}/reject — для отклонения запроса.
+
+GET /api/Specialist/consultations/history — для получения истории консультаций.
+
+POST /api/Specialist/withdraw — для вывода средств.
+
+POST /api/Specialist/sync-calendar — для синхронизации календаря с Google.
+
+PUT /api/Specialist/update-profile — для обновления профиля специалиста.
+
+POST /api/Specialist/upload-license — для загрузки лицензии.
+
+PUT /api/Specialist/paypal — для обновления PayPal аккаунта.
+
+GET /api/Specialist/calendar — для получения календаря специалиста.
+
+Методы в сервисах:
+
+ISpecialistService
+
+GetProfileAsync(string userId) — для получения профиля специалиста.
+
+GetConsultationRequestsAsync(string specialistId) — для получения запросов от клиентов.
+
+ConfirmConsultationRequestAsync(Guid requestId) — для подтверждения запроса на консультацию.
+
+RejectConsultationRequestAsync(Guid requestId) — для отклонения запроса.
+
+GetConsultationHistoryAsync(string specialistId) — для получения истории консультаций.
+
+WithdrawAsync(string specialistId) — для вывода средств.
+
+SyncCalendarAsync(string specialistId) — для синхронизации календаря с Google.
+
+UpdateProfileAsync(SpecialistProfileDto profileDto) — для обновления профиля.
+
+UploadLicenseAsync(LicenseDto licenseDto) — для загрузки лицензии.
+
+UpdatePayPalAsync(PayPalDto payPalDto) — для обновления PayPal информации.
+
+-----------------------------------------
+
+10. VideoController.cs
+Эндпойнты:
+
+GET /video/{consultationId} — для получения видео-консультации.
+
+Методы в сервисах:
+
+IVideoService
+
+GetVideoByConsultationIdAsync(Guid consultationId) — для получения видео по ID консультации.

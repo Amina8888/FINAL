@@ -3,10 +3,10 @@
 👤 Аутентификация и учётные записи
 
 POST /api/account/register-specialist - Регистрация специалиста (с резюме, лицензией) +
-POST /api/account/register-user - Регистрация обычного пользователя -
+POST /api/account/register-user - Регистрация обычного пользователя +
 POST /api/account/login - Аутентификация, JWT +
-POST /api/account/logout - Выход -
-GET /api/account/me - Профиль текущего пользователя -
+POST /api/account/logout - Выход +
+GET /api/account/me - Профиль текущего пользователя +
 
 🧑‍⚕️ Специалист
 
@@ -160,11 +160,12 @@ ConsultationApp/
 🔧 Controllers/
 
 AccountController.cs
-- Регистрация и вход (JWT)
-- POST /register-specialist
-- POST /register-user
-- POST /login
-- GET /me (текущий пользователь)
+- Регистрация и вход (JWT) +
+- POST /register-specialist +
+- POST /register-user +
+- POST /login +
+- POST /logout +
+- GET /me (текущий пользователь) +
 
 SpecialistController.cs
 - CRUD профиля специалиста

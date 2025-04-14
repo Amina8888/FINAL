@@ -1,75 +1,77 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using System;
-using System.Threading.Tasks;
-using System.IO;
 using API.Models;
 using API.DTOs;
 using API.Services;
 using API.Data;
 
-[ApiController]
-[Route("api/[controller]")]
-public class AccountController : ControllerBase
+using System.Security.Claims;
+using System.Linq; 
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Threading.Tasks;
+
+
+namespace API.Controllers
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IPasswordHasher<User> _passwordHasher;
-    private readonly IJwtTokenService _jwtTokenService;
-
-    public AccountController(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, IJwtTokenService jwtTokenService)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AccountController : ControllerBase
     {
-        _context = context;
-        _passwordHasher = passwordHasher;
-        _jwtTokenService = jwtTokenService;
-    }
+        private readonly IAuthService _authService;
 
-    [HttpPost("register-specialist")]
-    public async Task<IActionResult> RegisterSpecialist([FromBody] RegisterSpecialistDto dto)
-    {
-        if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+        public AccountController(IAuthService authService)
+        {
+            _authService = authService;
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        {
+            var token = await _authService.LoginAsync(dto.Email, dto.Password);
+            if (token == null)
+                return Unauthorized("Invalid credentials.");
+
+            return Ok(new { token });
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> Me()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+
+            var user = await _authService.GetCurrentUserInfoAsync(userId);
+            if (user == null) return NotFound();
+
+            return Ok(user);
+        }
+
+        [HttpPost("register-specialist")]
+        public async Task<IActionResult> RegisterSpecialist([FromBody] RegisterSpecialistDto dto)
+        {
+            var result = await _authService.RegisterSpecialistAsync(dto);
+            if (result)
+                return Ok("Specialist registered successfully.");
+
             return BadRequest("Email is already in use.");
+        }
 
-        var user = new User
+        [HttpPost("register-user")]
+        public async Task<IActionResult> RegisterUser([FromBody] RegisterUserDto dto)
         {
-            Email = dto.Email,
-            Role = "Specialist"
-        };
-        user.PasswordHash = _passwordHasher.HashPassword(user, dto.Password);
+            var result = await _authService.RegisterUserAsync(dto);
+            if (result)
+                return Ok("User registered successfully.");
 
-        var profile = new SpecialistProfile
+            return BadRequest("Email is already in use.");
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public IActionResult Logout()
         {
-            User = user,
-            FullName = dto.FullName,
-            Category = dto.Category,
-            Subcategory = dto.Subcategory,
-            Resume = dto.Resume,
-            PricePerConsultation = dto.PricePerConsultation
-        };
-
-        _context.Users.Add(user);
-        _context.SpecialistProfiles.Add(profile);
-
-        await _context.SaveChangesAsync();
-
-        return Ok("Specialist registered successfully.");
-    }
-
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto dto)
-    {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-        if (user == null)
-            return Unauthorized("Invalid credentials.");
-
-        var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
-        if (result == PasswordVerificationResult.Failed)
-            return Unauthorized("Invalid credentials.");
-
-        var token = _jwtTokenService.GenerateToken(user);
-        return Ok(new { token });
+            _authService.LogoutAsync();
+            return Ok("Logged out successfully.");
+        }
     }
 }
-

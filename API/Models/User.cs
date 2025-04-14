@@ -13,8 +13,19 @@ public class User
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public SpecialistProfile? SpecialistProfile { get; set; }
-
+    public decimal AverageRating { get; set; } = 0;
+    public double PricePerConsultation { get; set; }
 
     public ICollection<Consultation> ConsultationsAsClient { get; set; } = new List<Consultation>();
     public ICollection<Consultation> ConsultationsAsSpecialist { get; set; } = new List<Consultation>();
 }
+
+// public enum UserRole
+// {
+//     User,
+//     Specialist,
+//     Admin
+// }
+
+// public UserRole Role { get; set; } = UserRole.User;
+

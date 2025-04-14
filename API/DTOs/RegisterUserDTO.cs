@@ -1,7 +1,8 @@
 namespace API.DTOs;
 
-public class LoginDto
+public class RegisterUserDto
 {
     public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;
+    public string FullName { get; set; } = null!;
 }

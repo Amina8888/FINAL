@@ -31,7 +31,7 @@ public class PaymentController : ControllerBase
         var consultation = await _context.Consultations
             .Include(c => c.CalendarSlot)
             .Include(c => c.Specialist)
-            .FirstOrDefaultAsync(c => c.Id == consultationId);
+            .FirstOrDefaultAsync(c => c.ConsultationId == consultationId);
 
         if (consultation == null) return NotFound("Consultation not found.");
         if (consultation.IsPaid) return BadRequest("Already paid.");

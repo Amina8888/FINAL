@@ -1,0 +1,78 @@
+✅ Контроллеры и их эндпойнты
+
+🔐 AccountController.cs
+Метод	URL	DTO
+POST	/api/account/register-specialist	RegisterSpecialistDto +
+POST	/api/account/register-user	RegisterUserDto +
+POST	/api/account/login	LoginDto +
+POST	/api/account/logout	+
+GET	/api/account/me	+
+
+👨‍⚕️ SpecialistController.cs
+Метод	URL	DTO
+GET	/api/specialist/profile	+
+PUT	/api/specialist/update-profile	UpdateProfileDto +
+POST	/api/specialist/upload-license	UploadLicenseDto (IFormFile) +
+GET	/api/specialist/requests	+
+POST	/api/specialist/requests/{id}/approve	+
+POST	/api/specialist/requests/{id}/reject	+
+GET	/api/specialist/consultations/history	+
+POST	/api/specialist/withdraw	WithdrawDto +
+POST	/api/specialist/sync-calendar	+
+
+📅 CalendarController.cs
+Метод	URL	DTO
+POST	/api/specialist/calendar/add → /api/calendar/create-slot	CreateSlotDto
+GET	/api/specialist/calendar/my → /api/calendar/my-slots	+
+DELETE	/api/specialist/calendar/remove/{slotId}	+
+GET	/api/calendar/specialist/{id}/available	+
+
+🙋 ClientController.cs
+Метод	URL	DTO
+GET	/api/client/specialists	+
+GET	/api/client/specialist/{id}	+
+POST	/api/client/consultation/request → /api/consultation/book	ConsultationRequestDto +
+GET	/api/client/consultations → /api/consultation/my	+
+POST	/api/client/consultations/{id}/reschedule	RescheduleDto +
+
+💳 PaymentController.cs
+Метод	URL	DTO
+POST	/api/payment/create/{consultationId}	+
+GET	/api/payment/success?token=...	+???
+
+⭐️ ReviewController.cs
+Метод	URL	DTO
+POST	/api/review/add	AddReviewDto +
+GET	/api/review/check/{consultationId}	+
+GET	/api/review/specialist/{id}	+
+
+💬 ChatController.cs
+Метод	URL	DTO
+GET	/api/chat/{consultationId}	—
+POST	/api/chat/{consultationId}	ChatMessageDto
+
+🎥 VideoController.cs
+Метод	URL	DTO
+GET	/video/{consultationId}	—
+
+🛡 AdminController.cs
+Метод	URL	DTO
+GET	/api/admin/users	—
+GET	/api/admin/specialists	—
+POST	/api/admin/specialists/{id}/approve	—
+POST	/api/admin/specialists/{id}/reject	RejectReasonDto (опционально)
+
+📦 DTO-файлы и их названия
+Название DTO	Назначение
+RegisterSpecialistDto	email, password, fullname, resume, category, price
+RegisterUserDto	email, password, fullname
+LoginDto	email, password
+UpdateProfileDto	fullname, resume, subcategory, price, avatar
+UploadLicenseDto	IFormFile File
+CreateSlotDto	startDate, endDate, timezone
+ConsultationRequestDto	specialistId, message, slotId
+RescheduleDto	newSlotId
+WithdrawDto	amount, paypalEmail
+AddReviewDto	consultationId, rating, comment
+ChatMessageDto	senderId, message
+RejectReasonDto (опц.)	reason

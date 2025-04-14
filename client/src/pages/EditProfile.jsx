@@ -1,4 +1,4 @@
-// ✅ Backend должен поддерживать:
+// Backend должен поддерживать:
 // Метод	URL	Описание
 // GET	/api/specialist/profile	Получить текущий профиль
 // PUT	/api/specialist/update-profile	Обновить профиль специалиста

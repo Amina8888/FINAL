@@ -15,42 +15,28 @@ using API.DTOs;
 public class ConsultationController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly IConsultationService _consultationService;
 
-    public ConsultationController(ApplicationDbContext context)
+    public ConsultationController(ApplicationDbContext context, IConsultationService consultationService)
     {
         _context = context;
+        _consultationService = consultationService; 
     }
 
     [Authorize(Roles = "Client")]
     [HttpPost("book")]
     public async Task<IActionResult> BookConsultation([FromBody] BookConsultationDto dto)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
 
-        var client = await _context.Users.FindAsync(Guid.Parse(userId));
-        if (client == null) return BadRequest("Client not found");
+            var clientId = Guid.Parse(userId);
 
-        var slot = await _context.CalendarSlots
-            .FirstOrDefaultAsync(s => s.Id == dto.CalendarSlotId && s.SpecialistId == dto.SpecialistId);
+            var success = await _consultationService.BookConsultation(clientId, dto);
+            if (!success)
+                return BadRequest("Failed to book consultation. Please check the slot availability.");
 
-        if (slot == null) return BadRequest("Slot not found.");
-        if (slot.IsBooked) return BadRequest("Slot already booked.");
-
-        slot.IsBooked = true;
-
-        var consultation = new Consultation
-        {
-            SpecialistId = dto.SpecialistId,
-            ClientId = client.Id,
-            CalendarSlotId = slot.Id,
-            IsPaid = false // мы подключим оплату позже
-        };
-
-        _context.Consultations.Add(consultation);
-        await _context.SaveChangesAsync();
-
-        return Ok("Consultation booked.");
+            return Ok("Consultation booked.");
     }
 
     [Authorize(Roles = "Client,Specialist")]
@@ -74,7 +60,7 @@ public class ConsultationController : ControllerBase
         }
         else if (role == "Specialist")
         {
-            var specialist = await _context.SpecialistProfiles.FirstOrDefaultAsync(s => s.UserId == Guid.Parse(userId));
+            var specialist = await _context.SpecialistProfile.FirstOrDefaultAsync(s => s.UserId == Guid.Parse(userId));
             if (specialist == null) return BadRequest("Specialist not found.");
             consultationsQuery = consultationsQuery.Where(c => c.SpecialistId == specialist.Id);
         }
@@ -85,4 +71,19 @@ public class ConsultationController : ControllerBase
 
         return Ok(consultations);
     }
+
+    [Authorize(Roles = "Client")]
+    [HttpPost("reschedule/{consultationId}")]
+    public async Task<IActionResult> RescheduleConsultation(Guid consultationId, [FromBody] Guid newSlotId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var success = await _consultationService.Reschedule(Guid.Parse(userId), consultationId, newSlotId);
+        if (!success)
+            return BadRequest("Failed to reschedule consultation.");
+
+        return Ok("Consultation rescheduled successfully.");
+    }
+
 }

@@ -1,3 +1,5 @@
+// Назначение: Создание сессии оплаты, подтверждение платежа.
+
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -13,7 +15,7 @@ namespace API.Services;
 
 public interface IPayPalService
 {
-    Task<string?> CreateCheckoutSessionAsync(Guid consultationId, decimal amount);
+    Task<string?> CreateCheckoutSessionAsync(Guid consultationId, double amount);
     Task<bool> CapturePaymentAsync(string orderId, Guid consultationId);
 }
 
@@ -48,7 +50,7 @@ public class PayPalService : IPayPalService
         return json.RootElement.GetProperty("access_token").GetString()!;
     }
 
-    public async Task<string?> CreateCheckoutSessionAsync(Guid consultationId, decimal amount)
+    public async Task<string?> CreateCheckoutSessionAsync(Guid consultationId, double amount)
     {
         var accessToken = await GetAccessTokenAsync();
 

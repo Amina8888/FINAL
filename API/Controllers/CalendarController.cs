@@ -1,81 +1,82 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using System;
-using System.Threading.Tasks;
-using System.IO;
-using API.Data;
-using API.Services;
-using API.Models;
 using API.DTOs;
+using API.Services;
+using System.Threading.Tasks;
 
-
-[ApiController]
-[Route("api/[controller]")]
-public class CalendarController : ControllerBase
+namespace API.Controllers
 {
-    private readonly ApplicationDbContext _context;
-
-    public CalendarController(ApplicationDbContext context)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class CalendarController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly ICalendarService _calendarService;
 
-    [Authorize(Roles = "Specialist")]
-    [HttpPost("create-slot")]
-    public async Task<IActionResult> CreateSlot([FromBody] CreateCalendarSlotDto dto)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
-
-        var specialist = await _context.SpecialistProfiles
-            .FirstOrDefaultAsync(p => p.UserId == Guid.Parse(userId));
-
-        if (specialist == null) return BadRequest("Profile not found.");
-
-        var slot = new CalendarSlot
+        public CalendarController(ICalendarService calendarService)
         {
-            SpecialistId = specialist.Id,
-            StartTime = dto.StartTime,
-            EndTime = dto.EndTime
-        };
+            _calendarService = calendarService;
+        }
 
-        _context.CalendarSlots.Add(slot);
-        await _context.SaveChangesAsync();
+        // Создание слота специалиста
+        [Authorize(Roles = "Specialist")]
+        [HttpPost("create-slot")]
+        public async Task<IActionResult> CreateSlot([FromBody] CreateCalendarSlotDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
 
-        return Ok("Slot created.");
-    }
+            var result = await _calendarService.CreateCalendarSlotAsync(dto, userId);
 
-    [Authorize(Roles = "Specialist")]
-    [HttpGet("my-slots")]
-    public async Task<IActionResult> GetMySlots()
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
+            if (result == "Profile not found.")
+                return BadRequest(result);
 
-        var specialist = await _context.SpecialistProfiles
-            .FirstOrDefaultAsync(p => p.UserId == Guid.Parse(userId));
+            return Ok(result);
+        }
 
-        if (specialist == null) return BadRequest("Profile not found.");
+        // Получение своих слотов
+        [Authorize(Roles = "Specialist")]
+        [HttpGet("my-slots")]
+        public async Task<IActionResult> GetMySlots()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
 
-        var slots = await _context.CalendarSlots
-            .Where(s => s.SpecialistId == specialist.Id)
-            .OrderBy(s => s.StartTime)
-            .ToListAsync();
+            var slots = await _calendarService.GetMySlotsAsync(userId);
 
-        return Ok(slots);
-    }
+            if (slots == null || !slots.Any())
+                return NotFound("No slots found.");
 
-    [AllowAnonymous]
-    [HttpGet("specialist/{id}/available")]
-    public async Task<IActionResult> GetAvailableSlots(Guid id)
-    {
-        var slots = await _context.CalendarSlots
-            .Where(s => s.SpecialistId == id && !s.IsBooked && s.StartTime > DateTime.UtcNow)
-            .OrderBy(s => s.StartTime)
-            .ToListAsync();
+            return Ok(slots);
+        }
 
-        return Ok(slots);
+        // Получение доступных слотов
+        [AllowAnonymous]
+        [HttpGet("specialist/{id}/available")]
+        public async Task<IActionResult> GetAvailableSlots(Guid id)
+        {
+            var slots = await _calendarService.GetAvailableSlotsAsync(id);
+
+            if (slots == null || !slots.Any())
+                return NotFound("No available slots found.");
+
+            return Ok(slots);
+        }
+
+        // Удаление слота
+        [Authorize(Roles = "Specialist")]
+        [HttpDelete("remove/{slotId}")]
+        public async Task<IActionResult> RemoveSlot(Guid slotId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+
+            var result = await _calendarService.RemoveSlotAsync(slotId, userId);
+
+            if (result == "Profile not found." || result == "Slot not found.")
+                return BadRequest(result);
+
+            return Ok(result);
+        }
     }
 }

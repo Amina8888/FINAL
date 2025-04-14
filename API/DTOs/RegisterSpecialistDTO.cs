@@ -1,3 +1,5 @@
+namespace API.DTOs;
+
 public class RegisterSpecialistDto
 {
     public string Email { get; set; } = null!;

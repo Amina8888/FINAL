@@ -23,7 +23,7 @@ public class AdminController : ControllerBase
     [HttpPost("approve-license/{specialistId}")]
     public async Task<IActionResult> ApproveLicense(Guid specialistId)
     {
-        var profile = await _context.SpecialistProfiles
+        var profile = await _context.SpecialistProfile
             .FirstOrDefaultAsync(p => p.Id == specialistId);
 
         if (profile == null)

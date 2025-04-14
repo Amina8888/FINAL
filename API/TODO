@@ -1,3 +1,21 @@
+TODO List:
+- авторизация через google
+- добавить смену карты, пароля
+- добавить выбор категории специалиста и навыки из списка, позволять добавить новую сабкатегорию?
+
+Services/
+├── Interfaces/
+│   ├── IJwtTokenService.cs
+│   ├── IPayPalService.cs
+│   ├── IGoogleCalendarService.cs
+│   ├── IConsultationService.cs
+│   └── ...
+├── Implementations/
+│   ├── JwtTokenService.cs
+│   ├── PayPalService.cs
+│   ├── GoogleCalendarService.cs
+│   ├── ConsultationService.cs
+
 Отлично! ✨
 Давай сделаем универсальный хук useMyProfile(), который:
 

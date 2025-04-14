@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using API.Models; // Заменить на твой namespace с моделями
+using API.Models;
+using API.Services;
 
 namespace API.Data
 {
@@ -8,10 +9,13 @@ namespace API.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) {}
 
         public DbSet<User> Users => Set<User>();
-        public DbSet<SpecialistProfile> SpecialistProfiles => Set<SpecialistProfile>();
+        public DbSet<SpecialistProfile> SpecialistProfile => Set<SpecialistProfile>();
         public DbSet<Consultation> Consultations => Set<Consultation>();
         public DbSet<CalendarSlot> CalendarSlots => Set<CalendarSlot>();
-        public DbSet<Review> Reviews => Set<Review>();
+        public DbSet<Review> Review => Set<Review>();
+
+        public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

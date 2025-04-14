@@ -3,6 +3,7 @@ namespace API.Models;
 public class SpecialistProfile
 {
     public Guid Id { get; set; } = Guid.NewGuid();
+    public string Email { get; set; } = null!;
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
 
@@ -11,9 +12,13 @@ public class SpecialistProfile
     public string? Subcategory { get; set; }
     public string Resume { get; set; } = null!;
     public decimal PricePerConsultation { get; set; }
+    public bool IsApproved { get; set; }
 
     public string? LicenseDocumentUrl { get; set; }
     public bool IsLicenseApproved { get; set; } = false;
 
+    public decimal AverageRating { get; set; }
+    public string? ProfileImageUrl { get; set; }
+    public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
