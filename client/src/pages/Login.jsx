@@ -1,61 +1,74 @@
 import { useState } from "react";
+import axios from "../axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
+import GoogleLoginButton from "../components/GoogleLoginButton";
 
-export default function Login() {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-
     try {
-      const res = await fetch("https://localhost:5001/api/account/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const response = await axios.post("/account/login", {
+        email,
+        password,
       });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || "Login failed");
-      }
-
-      const data = await res.json();
-      localStorage.setItem("token", data.token);
+      login(response.data.token, response.data.user);
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message);
+      alert("Login failed");
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-[calc(100vh-60px)]">
-      <form onSubmit={handleLogin} className="bg-zinc-800 p-6 rounded-lg shadow-lg w-full max-w-sm">
-        <h2 className="text-xl font-bold mb-4 text-center">Вход</h2>
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow-md rounded px-8 py-6 w-full max-w-md"
+      >
+        <h2 className="text-2xl font-bold mb-6 text-center text-primary">
+          Login
+        </h2>
         <input
           type="email"
           placeholder="Email"
-          className="w-full p-2 rounded bg-zinc-700 text-white mb-3"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          className="w-full px-4 py-2 border mb-4 rounded"
           required
         />
         <input
           type="password"
-          placeholder="Пароль"
-          className="w-full p-2 rounded bg-zinc-700 text-white mb-3"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="w-full px-4 py-2 border mb-4 rounded"
           required
         />
-        {error && <p className="text-red-400 text-sm mb-2">{error}</p>}
-        <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded">
-          Войти
+        <button
+          type="submit"
+          className="w-full bg-accent text-white py-2 rounded hover:bg-blue-600"
+        >
+          Sign In
         </button>
+
+        <div className="my-4">
+          <GoogleLoginButton />
+        </div>
+
+        <p className="text-sm text-center mt-4">
+          Don't have an account?{" "}
+          <a href="/register" className="text-accent hover:underline">
+            Register
+          </a>
+        </p>
       </form>
     </div>
   );
-}
+};
+
+export default Login;
