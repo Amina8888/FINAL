@@ -1,3 +1,4 @@
+import PrivateRoute from "./PrivateRoute";
 import { useLocation } from "react-router-dom";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 // import Home from "./pages/Home";
@@ -44,14 +45,14 @@ function Layout() {
             {/* <Route path="/" element={<Home />} /> */}
             <Route path="/login" element={<Login />} />
             {/* <Route path="/register" element={<Register />} /> */}
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/specialist/:id" element={<SpecialistProfile />} />
             <Route path="/payment/:consultationId" element={<PaymentPage />} />
-            <Route path="/calendar" element={<CalendarManager />} />
+            <Route path="/calendar" element={<PrivateRoute><CalendarManager /></PrivateRoute>} />
             <Route path="/chat/:consultationId" element={<ChatPage />} />
             <Route path="/video/:consultationId" element={<VideoCall />} />
             <Route path="/profile/edit" element={<EditProfile />} />
-            <Route path="/specialists" element={<SpecialistList />} />
+            <Route path="/specialists" element={<PrivateRoute><SpecialistList /></PrivateRoute>} />
           </Routes>
         </div>
       </div>
