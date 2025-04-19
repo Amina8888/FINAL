@@ -1,14 +1,11 @@
+
 using API.Models;
 using API.DTOs;
 using API.Services;
-using API.Data;
-
-using System.Security.Claims;
-using System.Linq; 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using System.Threading.Tasks;
-
 
 namespace API.Controllers
 {
@@ -33,45 +30,43 @@ namespace API.Controllers
             return Ok(new { token });
         }
 
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterUserDto dto)
+        {
+            var result = await _authService.RegisterAsync(dto);
+            if (result == null)
+                return BadRequest("Registration failed");
+
+            return Ok(result);
+        }
+
         [Authorize]
         [HttpGet("me")]
         public async Task<IActionResult> Me()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            if (userId == null)
+                return Unauthorized();
 
             var user = await _authService.GetCurrentUserInfoAsync(userId);
-            if (user == null) return NotFound();
-
             return Ok(user);
         }
 
-        [HttpPost("register-specialist")]
-        public async Task<IActionResult> RegisterSpecialist([FromBody] RegisterSpecialistDto dto)
+        [HttpGet("google-login")]
+        public IActionResult GoogleLogin()
         {
-            var result = await _authService.RegisterSpecialistAsync(dto);
-            if (result)
-                return Ok("Specialist registered successfully.");
-
-            return BadRequest("Email is already in use.");
+            var url = _authService.GetGoogleOAuthUrl();
+            return Redirect(url);
         }
 
-        [HttpPost("register-user")]
-        public async Task<IActionResult> RegisterUser([FromBody] RegisterUserDto dto)
+        [HttpGet("google-callback")]
+        public async Task<IActionResult> GoogleCallback([FromQuery] string code, [FromQuery] string state)
         {
-            var result = await _authService.RegisterUserAsync(dto);
-            if (result)
-                return Ok("User registered successfully.");
+            var result = await _authService.HandleGoogleCallbackAsync(code);
+            if (result == null)
+                return BadRequest("Google login failed");
 
-            return BadRequest("Email is already in use.");
-        }
-
-        [Authorize]
-        [HttpPost("logout")]
-        public IActionResult Logout()
-        {
-            _authService.LogoutAsync();
-            return Ok("Logged out successfully.");
+            return Ok(result);
         }
     }
 }

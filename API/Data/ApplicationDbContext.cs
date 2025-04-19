@@ -15,7 +15,7 @@ namespace API.Data
         public DbSet<Review> Review => Set<Review>();
 
         public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
-
+        public DbSet<ScheduledCall> ScheduledCalls => Set<ScheduledCall>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

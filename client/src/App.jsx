@@ -1,3 +1,4 @@
+import CallSchedule from "./pages/CallSchedule";
 import PrivateRoute from "./PrivateRoute";
 import { useLocation } from "react-router-dom";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -14,6 +15,8 @@ import ChatPage from "./pages/ChatPage";
 import VideoCall from "./pages/VideoCall";
 import EditProfile from "./pages/EditProfile";
 import SpecialistList from "./pages/SpecialistList";
+import RegisterUserForm from "./pages/Account/RegisterUserForm";
+
 
 // Backend должен возвращать список:
 // GET /api/client/specialists
@@ -42,6 +45,8 @@ function Layout() {
         {!hideLayout && <Navbar />}
         <div className="p-4">
           <Routes>
+        <Route path="/schedule" element={<PrivateRoute><CallSchedule /></PrivateRoute>} />
+        <Route path="/video" element={<PrivateRoute><VideoCall /></PrivateRoute>} />
             {/* <Route path="/" element={<Home />} /> */}
             <Route path="/login" element={<Login />} />
             {/* <Route path="/register" element={<Register />} /> */}
@@ -53,6 +58,7 @@ function Layout() {
             <Route path="/video/:consultationId" element={<VideoCall />} />
             <Route path="/profile/edit" element={<EditProfile />} />
             <Route path="/specialists" element={<PrivateRoute><SpecialistList /></PrivateRoute>} />
+            <Route path="/register" element={<RegisterUserForm />} />
           </Routes>
         </div>
       </div>

@@ -10,6 +10,10 @@ namespace API.Services
         Task<string?> LoginAsync(string email, string password);
         Task<UserDto?> GetCurrentUserInfoAsync(string userId);
         Task<bool> RegisterUserAsync(RegisterUserDto userDto);
+        Task<object?> RegisterAsync(RegisterUserDto dto);
+        Task<bool> UserExistsAsync(string email);
+        string GetGoogleOAuthUrl();
+        Task<object?> HandleGoogleCallbackAsync(string code);
         Task<bool> RegisterSpecialistAsync(RegisterSpecialistDto specialistDto);
         Task LogoutAsync();
     }

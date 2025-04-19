@@ -8,7 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+using API.Hubs;
+using Microsoft.AspNetCore.SignalR;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSignalR();
 
 // Регистрация сервисов в DI контейнере
 builder.Services.AddHttpClient(); 
@@ -94,5 +99,7 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
+
+app.MapHub<VideoCallHub>("/hubs/video");
 
 app.Run();
