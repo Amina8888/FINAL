@@ -2,7 +2,7 @@ import CallSchedule from "./pages/CallSchedule";
 import PrivateRoute from "./PrivateRoute";
 import { useLocation } from "react-router-dom";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-// import Home from "./pages/Home";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 // import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -45,13 +45,12 @@ function Layout() {
         {!hideLayout && <Navbar />}
         <div className="p-4">
           <Routes>
-        <Route path="/schedule" element={<PrivateRoute><CallSchedule /></PrivateRoute>} />
-        <Route path="/video" element={<PrivateRoute><VideoCall /></PrivateRoute>} />
-            {/* <Route path="/" element={<Home />} /> */}
+            <Route path="/schedule" element={<PrivateRoute><CallSchedule /></PrivateRoute>} />
+            <Route path="/video" element={<PrivateRoute><VideoCall /></PrivateRoute>} />
+            <Route path="/" element={<Layout />} />
+            <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
-            {/* <Route path="/register" element={<Register />} /> */}
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-            <Route path="/specialist/:id" element={<SpecialistProfile />} />
             <Route path="/payment/:consultationId" element={<PaymentPage />} />
             <Route path="/calendar" element={<PrivateRoute><CalendarManager /></PrivateRoute>} />
             <Route path="/chat/:consultationId" element={<ChatPage />} />
