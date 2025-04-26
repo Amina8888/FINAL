@@ -85,6 +85,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Мидлвар для аутентификации и авторизации
+// Порядок важен
+app.UseCors("AllowFrontend");
 app.UseAuthentication(); // если используешь JWT
 app.UseAuthorization();
 
@@ -93,12 +95,6 @@ app.MapControllers();
 
 // Статические файлы (если используешь wwwroot)
 app.UseStaticFiles(); 
-
-
-app.UseCors("AllowFrontend");
-app.UseAuthentication();
-app.UseAuthorization();
-
 
 app.MapHub<VideoCallHub>("/hubs/video");
 

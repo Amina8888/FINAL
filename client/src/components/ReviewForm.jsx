@@ -46,7 +46,7 @@ export default function ReviewForm({ consultationId, onSubmitted }) {
     const token = localStorage.getItem("token");
   
     useEffect(() => {
-      fetch(`https://localhost:5001/api/review/check/${consultationId}`, {
+      fetch(`https://localhost:5085/api/review/check/${consultationId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
@@ -57,7 +57,7 @@ export default function ReviewForm({ consultationId, onSubmitted }) {
     }, [consultationId]);
   
     const submitReview = async () => {
-      await fetch("https://localhost:5001/api/review/add", {
+      await fetch("https://localhost:5085/api/review/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

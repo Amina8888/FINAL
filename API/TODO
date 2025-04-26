@@ -48,7 +48,7 @@ export function useMyProfile() {
 
     const fetchData = async () => {
       try {
-        const resUser = await fetch("https://localhost:5001/api/account/me", {
+        const resUser = await fetch("https://localhost:5085/api/account/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!resUser.ok) throw new Error("Ошибка получения профиля");
@@ -56,7 +56,7 @@ export function useMyProfile() {
         setUser(userData);
 
         if (userData.role === "Specialist") {
-          const resSpec = await fetch("https://localhost:5001/api/specialist/profile", {
+          const resSpec = await fetch("https://localhost:5085/api/specialist/profile", {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (!resSpec.ok) throw new Error("Ошибка анкеты специалиста");

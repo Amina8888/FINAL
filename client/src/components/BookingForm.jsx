@@ -8,7 +8,7 @@ export default function BookingForm({ specialistId }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`https://localhost:5001/api/calendar/available?specialistId=${specialistId}`)
+    fetch(`https://localhost:5085/api/calendar/available?specialistId=${specialistId}`)
       .then((res) => res.json())
       .then(setSlots)
       .finally(() => setLoading(false));
@@ -20,7 +20,7 @@ export default function BookingForm({ specialistId }) {
     const token = localStorage.getItem("token");
     if (!token) return navigate("/login");
 
-    const res = await fetch("https://localhost:5001/api/consultations/book", {
+    const res = await fetch("https://localhost:5085/api/consultations/book", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

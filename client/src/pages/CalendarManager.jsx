@@ -19,7 +19,7 @@ export default function CalendarManager() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("https://localhost:5001/api/calendar/my-slots", {
+      const res = await fetch("https://localhost:5085/api/calendar/my-slots", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -44,7 +44,7 @@ export default function CalendarManager() {
       const localDate = new Date(dateTime);
       const utcDateTime = localDate.toISOString();
 
-      const res = await fetch("https://localhost:5001/api/calendar/create-slot", {
+      const res = await fetch("https://localhost:5085/api/calendar/create-slot", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -62,7 +62,7 @@ export default function CalendarManager() {
 
   const handleDeleteSlot = async (id) => {
     try {
-      const res = await fetch(`https://localhost:5001/api/calendar/remove/${id}`, {
+      const res = await fetch(`https://localhost:5085/api/calendar/remove/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

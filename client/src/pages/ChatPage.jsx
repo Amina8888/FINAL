@@ -12,7 +12,7 @@ export default function ChatPage() {
   const token = localStorage.getItem("token");
 
   const fetchMessages = async () => {
-    const res = await fetch(`https://localhost:5001/api/chat/${consultationId}`, {
+    const res = await fetch(`https://localhost:5085/api/chat/${consultationId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -30,7 +30,7 @@ export default function ChatPage() {
   const sendMessage = async () => {
     if (!text.trim()) return;
 
-    await fetch(`https://localhost:5001/api/chat/${consultationId}`, {
+    await fetch(`https://localhost:5085/api/chat/${consultationId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -29,6 +29,18 @@ namespace API.Data
                 .HasOne(u => u.SpecialistProfile)
                 .WithOne(p => p.User)
                 .HasForeignKey<SpecialistProfile>(p => p.UserId);
+
+            modelBuilder.Entity<Consultation>()
+                .HasOne(c => c.Client)
+                .WithMany()
+                .HasForeignKey(c => c.ClientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Consultation>()
+                .HasOne(c => c.Specialist)
+                .WithMany()
+                .HasForeignKey(c => c.SpecialistId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

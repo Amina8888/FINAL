@@ -8,7 +8,7 @@ export default function UpcomingConsultations() {
 
   useEffect(() => {
     const fetchConsultations = async () => {
-      const res = await fetch("https://localhost:5001/api/consultations/upcoming", {
+      const res = await fetch("https://localhost:5085/api/consultations/upcoming", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

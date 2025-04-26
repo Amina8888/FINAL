@@ -9,7 +9,7 @@ export default function SpecialistList() {
 
 
   useEffect(() => {
-    fetch("https://localhost:5001/api/client/specialists")
+    fetch("https://localhost:5085/api/client/specialists")
       .then((res) => res.json())
       .then((data) => {
         setSpecialists(data);
