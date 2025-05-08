@@ -8,7 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+using API.Hubs;
+using Microsoft.AspNetCore.SignalR;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSignalR();
 
 // Регистрация сервисов в DI контейнере
 builder.Services.AddHttpClient(); 
@@ -19,6 +24,20 @@ builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IConsultationService, ConsultationService>();
 builder.Services.AddScoped<IPayPalService, PayPalService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+
+
+// Добавление CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+});
 
 // Добавление DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -76,6 +95,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 // Мидлвар для аутентификации и авторизации
+// Порядок важен
+app.UseCors("AllowFrontend");
 app.UseAuthentication(); // если используешь JWT
 app.UseAuthorization();
 
@@ -84,5 +105,7 @@ app.MapControllers();
 
 // Статические файлы (если используешь wwwroot)
 app.UseStaticFiles(); 
+
+app.MapHub<VideoCallHub>("/hubs/video");
 
 app.Run();

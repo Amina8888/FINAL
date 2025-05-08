@@ -38,7 +38,7 @@ export default function SpecialistProfile() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`https://localhost:5001/api/client/specialists/${id}`)
+    fetch(`https://localhost:5085/api/client/specialists/${id}`)
       .then((res) => res.json())
       .then(setSpecialist)
       .finally(() => setLoading(false));
@@ -49,7 +49,7 @@ export default function SpecialistProfile() {
     if (!token) return navigate("/login");
 
     try {
-      const res = await fetch("https://localhost:5001/api/consultations/book", {
+      const res = await fetch("https://localhost:5085/api/consultations/book", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

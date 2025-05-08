@@ -14,7 +14,7 @@ export default function PaymentPage() {
 
     if (!token) return navigate("/login");
 
-    fetch(`https://localhost:5001/api/payment/create/${consultationId}`, {
+    fetch(`https://localhost:5085/api/payment/create/${consultationId}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

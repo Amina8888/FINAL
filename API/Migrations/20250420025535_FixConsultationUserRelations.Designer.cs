@@ -3,6 +3,7 @@ using System;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250420025535_FixConsultationUserRelations")]
+    partial class FixConsultationUserRelations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,7 +51,6 @@ namespace API.Migrations
                 });
 
             modelBuilder.Entity("API.Models.ChatMessage", b =>
-            modelBuilder.Entity("API.Models.ChatMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -61,6 +63,9 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid>("ReceiverId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uuid");
 
@@ -70,8 +75,6 @@ namespace API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ConsultationId");
-
-                    b.HasIndex("SenderId");
 
                     b.ToTable("ChatMessages");
                 });
@@ -95,17 +98,7 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<bool>("IsCompleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsConfirmed")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsConfirmed")
@@ -117,19 +110,19 @@ namespace API.Migrations
                     b.Property<bool>("IsRejected")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsRejected")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("MeetingUrl")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("ScheduledAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("ScheduledAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<Guid>("SpecialistId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("UserId1")
                         .HasColumnType("uuid");
 
                     b.HasKey("ConsultationId");
@@ -159,18 +152,9 @@ namespace API.Migrations
                     b.Property<Guid>("ConsultationId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ConsultationId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("FullText")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("Rating")
-                        .HasColumnType("numeric");
                     b.Property<string>("FullText")
                         .IsRequired()
                         .HasColumnType("text");
@@ -184,9 +168,6 @@ namespace API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
-
-                    b.HasIndex("ConsultationId")
-                        .IsUnique();
 
                     b.HasIndex("ConsultationId")
                         .IsUnique();
@@ -229,19 +210,12 @@ namespace API.Migrations
                     b.Property<decimal>("AverageRating")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal>("AverageRating")
-                        .HasColumnType("numeric");
-
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -257,12 +231,6 @@ namespace API.Migrations
                     b.Property<bool>("IsApproved")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsApproved")
-                        .HasColumnType("boolean");
-
                     b.Property<bool>("IsLicenseApproved")
                         .HasColumnType("boolean");
 
@@ -271,9 +239,6 @@ namespace API.Migrations
 
                     b.Property<decimal>("PricePerConsultation")
                         .HasColumnType("numeric");
-
-                    b.Property<string>("ProfileImageUrl")
-                        .HasColumnType("text");
 
                     b.Property<string>("ProfileImageUrl")
                         .HasColumnType("text");
@@ -308,12 +273,6 @@ namespace API.Migrations
                     b.Property<decimal>("AverageRating")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("About")
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("AverageRating")
-                        .HasColumnType("numeric");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -327,21 +286,9 @@ namespace API.Migrations
                     b.Property<bool>("IsApproved")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("FullName")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsApproved")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("PayPalEmail")
-                        .HasColumnType("text");
-
-                    b.Property<double>("PricePerConsultation")
-                        .HasColumnType("double precision");
 
                     b.Property<string>("PayPalEmail")
                         .HasColumnType("text");
@@ -374,21 +321,11 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.ChatMessage", b =>
                 {
-                    b.HasOne("API.Models.Consultation", "Consultation")
+                    b.HasOne("API.Models.Consultation", null)
                         .WithMany("Messages")
                         .HasForeignKey("ConsultationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("API.Models.User", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Consultation");
-
-                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("API.Models.Consultation", b =>
@@ -400,16 +337,14 @@ namespace API.Migrations
                         .IsRequired();
 
                     b.HasOne("API.Models.User", "Client")
-                        .WithMany("ConsultationsAsClient")
+                        .WithMany()
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("API.Models.User", "Specialist")
-                        .WithMany("ConsultationsAsSpecialist")
+                        .WithMany()
                         .HasForeignKey("SpecialistId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -433,12 +368,6 @@ namespace API.Migrations
                     b.HasOne("API.Models.User", "Client")
                         .WithMany()
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("API.Models.Consultation", null)
-                        .WithOne("Review")
-                        .HasForeignKey("API.Models.Review", "ConsultationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -477,19 +406,8 @@ namespace API.Migrations
                     b.Navigation("Review");
                 });
 
-            modelBuilder.Entity("API.Models.Consultation", b =>
-                {
-                    b.Navigation("Messages");
-
-                    b.Navigation("Review");
-                });
-
             modelBuilder.Entity("API.Models.User", b =>
                 {
-                    b.Navigation("ConsultationsAsClient");
-
-                    b.Navigation("ConsultationsAsSpecialist");
-
                     b.Navigation("ConsultationsAsClient");
 
                     b.Navigation("ConsultationsAsSpecialist");

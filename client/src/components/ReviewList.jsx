@@ -4,7 +4,7 @@ export default function ReviewList({ specialistId }) {
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
-    fetch(`https://localhost:5001/api/review/specialist/${specialistId}`)
+    fetch(`https://localhost:5085/api/review/specialist/${specialistId}`)
       .then((res) => res.json())
       .then(setReviews);
   }, [specialistId]);
