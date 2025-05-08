@@ -186,4 +186,25 @@ public class SpecialistController : ControllerBase
 
         return Ok(consultations);
     }
+
+        // SpecialistController.cs (filtering specialists)
+    // [HttpGet("search")]
+    // [AllowAnonymous]
+    // public IActionResult SearchSpecialists(string category, decimal? maxPrice, bool? available)
+    // {
+    //     // Stubbed logic: you would normally query a DB with filters
+    //     var all = new List<object> // replace with real specialists
+    //     {
+    //         new { Id = 1, Name = "John Doe", Category = "IT", Price = 5000, Available = true },
+    //         new { Id = 2, Name = "Jane Smith", Category = "Law", Price = 3000, Available = false }
+    //     };
+
+    //     var filtered = all.Where(s =>
+    //         (string.IsNullOrEmpty(category) || s.Category == category) &&
+    //         (!maxPrice.HasValue || s.Price <= maxPrice) &&
+    //     (   !available.HasValue || s.Available == available)
+    //     ).ToList();
+
+    //     return Ok(filtered);
+    // }
 }

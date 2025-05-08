@@ -1,0 +1,75 @@
+my-consultation-app/
+├─ node_modules/
+├─ public/
+│  └─ index.html
+├─ src/
+│  ├─ assets/                   # Статические файлы, изображения, шрифты
+│  ├─ components/               # Повторно используемые компоненты (UI)
+│  │  ├─ Account/               # Компоненты для аккаунта
+│  │  │  ├─ LoginForm.jsx
+│  │  │  ├─ RegisterUserForm.jsx
+│  │  │  └─ RegisterSpecialistForm.jsx
+│  │  ├─ Admin/                 # Компоненты для админки
+│  │  │  └─ LicenseApproval.jsx
+│  │  ├─ Calendar/              # Компоненты для календаря
+│  │  │  ├─ CalendarManager.jsx
+│  │  │  └─ CalendarSlot.jsx
+│  │  ├─ Chat/                  # Компоненты чата
+│  │  │  ├─ ChatWindow.jsx
+│  │  │  └─ ChatMessage.jsx
+│  │  ├─ Client/                # Компоненты для клиента
+│  │  │  ├─ SpecialistsList.jsx
+│  │  │  ├─ SpecialistProfile.jsx
+│  │  │  ├─ ConsultationRequestForm.jsx
+│  │  │  └─ ConsultationHistory.jsx
+│  │  ├─ Consultation/          # Компоненты для консультаций
+│  │  │  ├─ ConsultationBooking.jsx
+│  │  │  └─ ConsultationReschedule.jsx
+│  │  ├─ Payment/               # Компоненты для платежей
+│  │  │  └─ PaymentStatus.jsx
+│  │  ├─ Review/                # Компоненты для отзывов
+│  │  │  ├─ ReviewForm.jsx
+│  │  │  └─ ReviewsList.jsx
+│  │  ├─ Specialist/            # Компоненты для специалиста
+│  │  │  ├─ SpecialistDashboard.jsx
+│  │  │  ├─ ConsultationRequests.jsx
+│  │  │  ├─ ConsultationHistory.jsx
+│  │  │  ├─ ProfileForm.jsx
+│  │  │  └─ Wallet.jsx
+│  │  └─ Video/                 # Компоненты для видео-консультаций
+│  │      └─ VideoPlayer.jsx
+│  ├─ pages/                    # Страницы приложения (связываются через роутинг)
+│  │  ├─ AccountPage.jsx        # Login, регистрация, информация о пользователе
+│  │  ├─ AdminPage.jsx          # Панель админа для одобрения лицензий и отклонения заявок
+│  │  ├─ CalendarPage.jsx       # Управление календарём (создание, удаление слотов)
+│  │  ├─ ChatPage.jsx           # Общий чат для консультаций
+│  │  ├─ ClientPage.jsx         # Основная страница клиента (список специалистов, запрос консультаций)
+│  │  ├─ ConsultationPage.jsx   # Страница бронирования и переноса консультаций
+│  │  ├─ PaymentPage.jsx        # Обработка платежей (создание платежа, успешный платеж)
+│  │  ├─ ReviewPage.jsx         # Работа с отзывами о специалистах
+│  │  ├─ SpecialistPage.jsx     # Страница специалиста (профиль, календарь, запросы, синхронизация календаря, PayPal и лицензия)\n│  └─ VideoPage.jsx          # Страница просмотра видео-консультаций
+│  ├─ services/                 # Сервисы для взаимодействия с API
+│  │  ├─ api.js                 # Универсальная настройка (например, через fetch или axios) с базовым URL
+│  │  ├─ authService.js         # AccountController: login, me, register, logout
+│  │  ├─ adminService.js        # AdminController: approve/reject лицензии
+│  │  ├─ calendarService.js     # CalendarController: create-slot, my-slots, available для специалиста, remove-slot
+│  │  ├─ chatService.js         # ChatController: get & send messages
+│  │  ├─ clientService.js       # ClientController: список специалистов, информация о специалисте, консультационные запросы, изменение консультаций
+│  │  ├─ consultationService.js # ConsultationController: бронирование консультаций, история, перенос
+│  │  ├─ paymentService.js      # PaymentController: создание платежей, обработка успешных платежей
+│  │  ├─ reviewService.js       # ReviewController: добавление и проверка отзывов, получение отзывов о специалисте
+│  │  ├─ specialistService.js   # SpecialistController: профиль специалиста, запросы, подтверждение/отклонение консультаций, история, вывод средств, синхронизация календаря, обновление профиля, загрузка лицензии, обновление PayPal, получение календаря
+│  │  └─ videoService.js        # VideoController: получение видео по консультации
+│  ├─ hooks/                    # Кастомные хуки (например, useAuth, useFetch)
+│  │  └─ useAuth.js
+│  ├─ context/                  # Контексты (например, для авторизации)
+│  │  └─ AuthContext.jsx
+│  ├─ routes/                   # Файл с настройкой роутинга через react-router-dom
+│  │  └─ AppRoutes.jsx
+│  ├─ App.jsx                   # Корневой компонент приложения
+│  ├─ main.jsx                  # Точка входа (инициализация Vite + React)
+│  └─ utils/                    # Утилиты и вспомогательные функции
+│      └─ helpers.js
+├─ package.json
+├─ vite.config.js
+└─ README.md

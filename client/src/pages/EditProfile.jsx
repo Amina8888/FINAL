@@ -23,7 +23,7 @@ export default function EditProfile() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetch("https://localhost:5001/api/specialist/profile", {
+    fetch("https://localhost:5001/specialist/profile", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -33,7 +33,7 @@ export default function EditProfile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await fetch("https://localhost:5001/api/specialist/update-profile", {
+    await fetch("https://localhost:5001/specialist/update-profile", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -45,7 +45,7 @@ export default function EditProfile() {
     if (license) {
       const data = new FormData();
       data.append("file", license);
-      await fetch("https://localhost:5001/api/specialist/upload-license", {
+      await fetch("https://localhost:5001/specialist/upload-license", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

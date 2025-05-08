@@ -54,6 +54,21 @@ namespace API.Controllers
                 return Forbid();
             }
         }
+
+        // ChatController.cs (fragment for file upload)
+        [HttpPost("upload-file")]
+        public IActionResult UploadFile(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("File is empty");
+
+            var filePath = Path.Combine("uploads", file.FileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                file.CopyTo(stream);
+            }
+            return Ok(new { path = filePath });
+        }
     }
 }
 

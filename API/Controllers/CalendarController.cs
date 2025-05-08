@@ -35,7 +35,7 @@ namespace API.Controllers
         }
 
         // Получение своих слотов
-        [Authorize(Roles = "Specialist")]
+        [Authorize(Roles = "Specialist,Client")]
         [HttpGet("my-slots")]
         public async Task<IActionResult> GetMySlots()
         {

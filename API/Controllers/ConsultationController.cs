@@ -24,7 +24,7 @@ public class ConsultationController : ControllerBase
     }
 
     [Authorize(Roles = "Client")]
-    [HttpPost("book")]
+    [HttpPost("book/{specialistId}")]
     public async Task<IActionResult> BookConsultation([FromBody] BookConsultationDto dto)
     {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -72,7 +72,7 @@ public class ConsultationController : ControllerBase
         return Ok(consultations);
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = "Client,Specialist")]
     [HttpPost("reschedule/{consultationId}")]
     public async Task<IActionResult> RescheduleConsultation(Guid consultationId, [FromBody] Guid newSlotId)
     {

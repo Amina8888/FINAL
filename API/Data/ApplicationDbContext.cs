@@ -21,6 +21,18 @@ namespace API.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Consultation>()
+                .HasOne(c => c.Client)
+                .WithMany(u => u.ConsultationsAsClient)
+                .HasForeignKey(c => c.ClientId)
+                .OnDelete(DeleteBehavior.Restrict); // важно: чтобы избежать циклического каскадного удаления
+
+            modelBuilder.Entity<Consultation>()
+                .HasOne(c => c.Specialist)
+                .WithMany(u => u.ConsultationsAsSpecialist)
+                .HasForeignKey(c => c.SpecialistId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
