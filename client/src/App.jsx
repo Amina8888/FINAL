@@ -76,12 +76,13 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import ModalLoginPage from "./pages/ModalLoginPage";
 import RegisterUserForm from "./pages/Account/RegisterUserForm";
 import Dashboard from "./pages/Dashboard";
 import CallSchedule from "./pages/CallSchedule";
 import SpecialistProfile from "./pages/SpecialistProfile";
 import PaymentPage from "./pages/PaymentPage";
-import CalendarManager from "./pages/CalendarManager";
+// import CalendarManager from "./pages/CalendarManager";
 import ChatPage from "./pages/ChatPage";
 import VideoCall from "./pages/VideoCall";
 import EditProfile from "./pages/EditProfile";
@@ -102,11 +103,11 @@ function MainLayout() {
         <div className="p-4">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<ModalLoginPage />} />
             <Route path="/register" element={<RegisterUserForm />} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/schedule" element={<PrivateRoute><CallSchedule /></PrivateRoute>} />
-            <Route path="/calendar" element={<PrivateRoute><CalendarManager /></PrivateRoute>} />
+            {/* <Route path="/calendar" element={<PrivateRoute><CalendarManager /></PrivateRoute>} /> */}
             <Route path="/chat/:consultationId" element={<ChatPage />} />
             <Route path="/video" element={<PrivateRoute><VideoCall /></PrivateRoute>} />
             <Route path="/video/:consultationId" element={<VideoCall />} />
