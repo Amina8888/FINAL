@@ -1,9 +1,12 @@
 import React, { useReducer } from "react";
+import type { JSX } from "react";
+
 
 interface Props {
   labelProps?: string;
   stateProp: "filled" | "active" | "default";
   className?: string;
+  text?: string;
 }
 
 export const TextInputConfirm = ({

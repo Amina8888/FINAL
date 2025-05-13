@@ -1,8 +1,8 @@
-import PropTypes from "prop-types";
 import React from "react";
 import { useReducer } from "react";
-import { TextInputConfirm } from "@/componentsTextInputConfirm";
-import vector3 from "./vector-3.svg";
+import { TextInputConfirm } from "@/components/PasswordConfirm";
+import type { JSX } from "react";
+import vector3 from "../assets/vector-3.png";
 
 interface Props {
   property1: "password-unchecked" | "password-checked";
@@ -96,8 +96,3 @@ function reducer(state: any, action: any) {
 
   return state;
 }
-
-PasswordHide.propTypes = {
-  property1: PropTypes.oneOf(["password-unchecked", "password-checked"]),
-  vector: PropTypes.string,
-};
