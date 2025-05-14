@@ -74,7 +74,7 @@ public class ConsultationController : ControllerBase
         }
         else if (role == "Specialist")
         {
-            var specialist = await _context.SpecialistProfiles.FirstOrDefaultAsync(s => s.UserId == Guid.Parse(userId));
+            var specialist = await _context.Profiles.FirstOrDefaultAsync(s => s.UserId == Guid.Parse(userId));
             if (specialist == null) return BadRequest("Specialist not found.");
             consultationsQuery = consultationsQuery.Where(c => c.SpecialistId == specialist.Id);
         }

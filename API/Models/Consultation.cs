@@ -5,7 +5,7 @@ public class Consultation
     public Guid Id { get; set; } = Guid.NewGuid();
 
     public Guid SpecialistId { get; set; }
-    public SpecialistProfile Specialist { get; set; } = null!;
+    public Profile Specialist { get; set; } = null!;
 
     public Guid ClientId { get; set; }
     public User Client { get; set; } = null!;

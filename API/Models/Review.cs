@@ -10,5 +10,5 @@ public class Review
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public User Client { get; set; } = null!;
-    public SpecialistProfile Specialist { get; set; } = null!;
+    public Profile Specialist { get; set; } = null!;
 }

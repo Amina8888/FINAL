@@ -1,0 +1,1 @@
+export { ModalRegisterPage } from "./ModalRegisterPage";

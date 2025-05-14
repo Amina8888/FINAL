@@ -26,35 +26,41 @@ public class AccountController : ControllerBase
         _jwtTokenService = jwtTokenService;
     }
 
-    [HttpPost("register-specialist")]
-    public async Task<IActionResult> RegisterSpecialist([FromBody] RegisterSpecialistDto dto)
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
         if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
             return BadRequest("Email is already in use.");
 
+       if (string.IsNullOrWhiteSpace(dto.Role) || !(dto.Role == "User" || dto.Role == "Specialist"))
+           return BadRequest("Invalid role.");
+
         var user = new User
         {
             Email = dto.Email,
-            Role = "Specialist"
+            Role = dto.Role
         };
         user.PasswordHash = _passwordHasher.HashPassword(user, dto.Password);
 
-        var profile = new SpecialistProfile
-        {
-            User = user,
-            FullName = dto.FullName,
-            Category = dto.Category,
-            Subcategory = dto.Subcategory,
-            Resume = dto.Resume,
-            PricePerConsultation = dto.PricePerConsultation
-        };
-
         _context.Users.Add(user);
-        _context.SpecialistProfiles.Add(profile);
-
         await _context.SaveChangesAsync();
 
-        return Ok("Specialist registered successfully.");
+        var profile = new Profile
+        {
+            UserId = user.Id,
+            Role = user.Role,
+            FullName = "",
+            About = "",
+            Category = "",
+            Resume = "",
+            PricePerConsultation = 0,
+            IsApproved = user.Role == "User"
+        };
+
+        _context.Profiles.Add(profile);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Registered successfully." });
     }
 
     [HttpPost("login")]
@@ -69,7 +75,7 @@ public class AccountController : ControllerBase
             return Unauthorized("Invalid credentials.");
 
         var token = _jwtTokenService.GenerateToken(user);
-        return Ok(new { token });
+        return Ok(new { token, role = user.Role });
     }
 }
 

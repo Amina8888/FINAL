@@ -29,7 +29,7 @@ public class CalendarController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null) return Unauthorized();
 
-        var specialist = await _context.SpecialistProfiles
+        var specialist = await _context.Profiles
             .FirstOrDefaultAsync(p => p.UserId == Guid.Parse(userId));
 
         if (specialist == null) return BadRequest("Profile not found.");
@@ -54,7 +54,7 @@ public class CalendarController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null) return Unauthorized();
 
-        var specialist = await _context.SpecialistProfiles
+        var specialist = await _context.Profiles
             .FirstOrDefaultAsync(p => p.UserId == Guid.Parse(userId));
 
         if (specialist == null) return BadRequest("Profile not found.");

@@ -23,9 +23,9 @@ public class ClientController : ControllerBase
     [HttpGet("specialists")]
     public async Task<IActionResult> GetSpecialists()
     {
-        var specialists = await _context.Users
+        var specialists = await _context.Profiles
             .Where(u => u.Role == "Specialist" && u.IsApproved)
-            .Select(u => new { u.Id, u.FullName, u.About, u.Email })
+            .Select(u => new { u.Id, u.FullName, u.About })
             .ToListAsync();
 
         return Ok(specialists);
@@ -34,11 +34,11 @@ public class ClientController : ControllerBase
     [HttpGet("specialists/{id}")]
     public async Task<IActionResult> GetSpecialist(Guid id)
     {
-        var specialist = await _context.Users
+        var specialist = await _context.Profiles
             .FirstOrDefaultAsync(u => u.Id == id && u.Role == "Specialist");
 
         if (specialist == null) return NotFound();
 
-        return Ok(new { specialist.FullName, specialist.About, specialist.Email });
+        return Ok(new { specialist.FullName, specialist.About });
     }
 }

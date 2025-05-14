@@ -62,6 +62,9 @@ namespace API.Migrations
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsConfirmed")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsPaid")
                         .HasColumnType("boolean");
 
@@ -80,6 +83,61 @@ namespace API.Migrations
                     b.HasIndex("SpecialistId");
 
                     b.ToTable("Consultations");
+                });
+
+            modelBuilder.Entity("API.Models.Profile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("About")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LicenseDocumentUrl")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("PricePerConsultation")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Resume")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Subcategory")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Profiles");
                 });
 
             modelBuilder.Entity("API.Models.Review", b =>
@@ -113,58 +171,11 @@ namespace API.Migrations
                     b.ToTable("Reviews");
                 });
 
-            modelBuilder.Entity("API.Models.SpecialistProfile", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsLicenseApproved")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LicenseDocumentUrl")
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("PricePerConsultation")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("Resume")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Subcategory")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("SpecialistProfiles");
-                });
-
             modelBuilder.Entity("API.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -186,9 +197,47 @@ namespace API.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("API.Models.WorkExperience", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Company")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Duration")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfileId");
+
+                    b.ToTable("WorkExperiences");
+                });
+
             modelBuilder.Entity("API.Models.CalendarSlot", b =>
                 {
-                    b.HasOne("API.Models.SpecialistProfile", "Specialist")
+                    b.HasOne("API.Models.Profile", "Specialist")
                         .WithMany()
                         .HasForeignKey("SpecialistId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -211,7 +260,7 @@ namespace API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("API.Models.SpecialistProfile", "Specialist")
+                    b.HasOne("API.Models.Profile", "Specialist")
                         .WithMany()
                         .HasForeignKey("SpecialistId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -224,6 +273,17 @@ namespace API.Migrations
                     b.Navigation("Specialist");
                 });
 
+            modelBuilder.Entity("API.Models.Profile", b =>
+                {
+                    b.HasOne("API.Models.User", "User")
+                        .WithOne("Profile")
+                        .HasForeignKey("API.Models.Profile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("API.Models.Review", b =>
                 {
                     b.HasOne("API.Models.User", "Client")
@@ -232,7 +292,7 @@ namespace API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("API.Models.SpecialistProfile", "Specialist")
+                    b.HasOne("API.Models.Profile", "Specialist")
                         .WithMany()
                         .HasForeignKey("SpecialistId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -243,20 +303,25 @@ namespace API.Migrations
                     b.Navigation("Specialist");
                 });
 
-            modelBuilder.Entity("API.Models.SpecialistProfile", b =>
+            modelBuilder.Entity("API.Models.WorkExperience", b =>
                 {
-                    b.HasOne("API.Models.User", "User")
-                        .WithOne("SpecialistProfile")
-                        .HasForeignKey("API.Models.SpecialistProfile", "UserId")
+                    b.HasOne("API.Models.Profile", "Profile")
+                        .WithMany("WorkExperiences")
+                        .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("Profile");
+                });
+
+            modelBuilder.Entity("API.Models.Profile", b =>
+                {
+                    b.Navigation("WorkExperiences");
                 });
 
             modelBuilder.Entity("API.Models.User", b =>
                 {
-                    b.Navigation("SpecialistProfile");
+                    b.Navigation("Profile");
                 });
 #pragma warning restore 612, 618
         }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,8 +18,7 @@ namespace API.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
-                    Role = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    Role = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -27,25 +26,28 @@ namespace API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SpecialistProfiles",
+                name: "Profiles",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Role = table.Column<string>(type: "text", nullable: false),
                     FullName = table.Column<string>(type: "text", nullable: false),
+                    About = table.Column<string>(type: "text", nullable: false),
                     Category = table.Column<string>(type: "text", nullable: false),
                     Subcategory = table.Column<string>(type: "text", nullable: true),
                     Resume = table.Column<string>(type: "text", nullable: false),
                     PricePerConsultation = table.Column<decimal>(type: "numeric", nullable: false),
                     LicenseDocumentUrl = table.Column<string>(type: "text", nullable: true),
-                    IsLicenseApproved = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    IsApproved = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SpecialistProfiles", x => x.Id);
+                    table.PrimaryKey("PK_Profiles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SpecialistProfiles_Users_UserId",
+                        name: "FK_Profiles_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -66,9 +68,9 @@ namespace API.Migrations
                 {
                     table.PrimaryKey("PK_CalendarSlots", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CalendarSlots_SpecialistProfiles_SpecialistId",
+                        name: "FK_CalendarSlots_Profiles_SpecialistId",
                         column: x => x.SpecialistId,
-                        principalTable: "SpecialistProfiles",
+                        principalTable: "Profiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -88,15 +90,39 @@ namespace API.Migrations
                 {
                     table.PrimaryKey("PK_Reviews", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Reviews_SpecialistProfiles_SpecialistId",
+                        name: "FK_Reviews_Profiles_SpecialistId",
                         column: x => x.SpecialistId,
-                        principalTable: "SpecialistProfiles",
+                        principalTable: "Profiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Reviews_Users_ClientId",
                         column: x => x.ClientId,
                         principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WorkExperiences",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProfileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Company = table.Column<string>(type: "text", nullable: false),
+                    Position = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Duration = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkExperiences", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WorkExperiences_Profiles_ProfileId",
+                        column: x => x.ProfileId,
+                        principalTable: "Profiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -111,7 +137,8 @@ namespace API.Migrations
                     CalendarSlotId = table.Column<Guid>(type: "uuid", nullable: false),
                     MeetingUrl = table.Column<string>(type: "text", nullable: true),
                     IsPaid = table.Column<bool>(type: "boolean", nullable: false),
-                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false)
+                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
+                    IsConfirmed = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -123,9 +150,9 @@ namespace API.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Consultations_SpecialistProfiles_SpecialistId",
+                        name: "FK_Consultations_Profiles_SpecialistId",
                         column: x => x.SpecialistId,
-                        principalTable: "SpecialistProfiles",
+                        principalTable: "Profiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -157,6 +184,12 @@ namespace API.Migrations
                 column: "SpecialistId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Profiles_UserId",
+                table: "Profiles",
+                column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Reviews_ClientId",
                 table: "Reviews",
                 column: "ClientId");
@@ -167,16 +200,15 @@ namespace API.Migrations
                 column: "SpecialistId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SpecialistProfiles_UserId",
-                table: "SpecialistProfiles",
-                column: "UserId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
                 table: "Users",
                 column: "Email",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkExperiences_ProfileId",
+                table: "WorkExperiences",
+                column: "ProfileId");
         }
 
         /// <inheritdoc />
@@ -189,10 +221,13 @@ namespace API.Migrations
                 name: "Reviews");
 
             migrationBuilder.DropTable(
+                name: "WorkExperiences");
+
+            migrationBuilder.DropTable(
                 name: "CalendarSlots");
 
             migrationBuilder.DropTable(
-                name: "SpecialistProfiles");
+                name: "Profiles");
 
             migrationBuilder.DropTable(
                 name: "Users");

@@ -23,13 +23,13 @@ public class AdminController : ControllerBase
     [HttpPost("approve-license/{specialistId}")]
     public async Task<IActionResult> ApproveLicense(Guid specialistId)
     {
-        var profile = await _context.SpecialistProfiles
+        var profile = await _context.Profiles
             .FirstOrDefaultAsync(p => p.Id == specialistId);
 
         if (profile == null)
             return NotFound("Specialist not found.");
 
-        profile.IsLicenseApproved = true;
+        profile.IsApproved = true;
         await _context.SaveChangesAsync();
 
         return Ok("License approved.");

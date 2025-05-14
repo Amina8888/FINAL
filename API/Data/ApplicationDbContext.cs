@@ -8,10 +8,12 @@ namespace API.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) {}
 
         public DbSet<User> Users => Set<User>();
-        public DbSet<SpecialistProfile> SpecialistProfiles => Set<SpecialistProfile>();
+        public DbSet<Profile> Profiles => Set<Profile>();
         public DbSet<Consultation> Consultations => Set<Consultation>();
         public DbSet<CalendarSlot> CalendarSlots => Set<CalendarSlot>();
         public DbSet<Review> Reviews => Set<Review>();
+        public DbSet<WorkExperience> WorkExperiences { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,9 +24,9 @@ namespace API.Data
                 .IsUnique();
 
             modelBuilder.Entity<User>()
-                .HasOne(u => u.SpecialistProfile)
+                .HasOne(u => u.Profile)
                 .WithOne(p => p.User)
-                .HasForeignKey<SpecialistProfile>(p => p.UserId);
+                .HasForeignKey<Profile>(p => p.UserId);
         }
     }
 }

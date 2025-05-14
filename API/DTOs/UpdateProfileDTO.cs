@@ -2,8 +2,13 @@ namespace API.DTOs
 {
     public class UpdateProfileDto
     {
-        public string Resume { get; set; } = null!;
-        public decimal PricePerConsultation { get; set; }
+        public string FullName { get; set; } = null!;
+        public string? About { get; set; }
+        public string? Category { get; set; }
         public string? Subcategory { get; set; }
+        public string? Resume { get; set; }
+        public decimal? PricePerConsultation { get; set; }
+        public string? LicenseDocumentUrl { get; set; }
+        
     }
 }
