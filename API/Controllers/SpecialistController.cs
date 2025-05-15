@@ -1,129 +1,68 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using System;
-using System.Threading.Tasks;
-using System.IO;
-using API.Data;
-using API.Services;
-using API.Models;
-using API.DTOs;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
+using System.Security.Claims;
+using API.Data;
+using API.Models;
+
+namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SpecialistController : ControllerBase
+[Authorize(Roles = "Specialist")]
+public class ConsultantController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
 
-    public SpecialistController(ApplicationDbContext context)
+    public ConsultantController(ApplicationDbContext context)
     {
         _context = context;
     }
 
-    [Authorize(Roles = "Specialist")]
-    [HttpPatch("update-profile")]
-    public async Task<IActionResult> UpdateSpecialistProfile([FromBody] UpdateProfileDto dto)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    [HttpGet("dashboard")]
+    public async Task<IActionResult> GetDashboard()
+        {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null) return Unauthorized();
 
-        var profile = await _context.Profiles
-            .Include(p => p.User)
-            .FirstOrDefaultAsync(p => p.UserId == Guid.Parse(userId));
+        var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId.ToString() == userId);
+        if (profile == null) return NotFound("Profile not found");
 
-        if (profile == null) return NotFound("Specialist profile not found.");
+        var upcomingConsultation = await _context.Consultations
+            .Include(c => c.Client)
+            .ThenInclude(u => u.Profile)
+            .Where(c => c.SpecialistId.ToString() == userId && c.StartTime > DateTime.UtcNow)
+            .OrderBy(c => c.StartTime)
+            .FirstOrDefaultAsync();
 
-        if (!string.IsNullOrWhiteSpace(dto.FullName))
-            profile.FullName = dto.FullName;
-
-        if (!string.IsNullOrWhiteSpace(dto.About))
-            profile.About = dto.About;
-
-        if (!string.IsNullOrWhiteSpace(dto.Category))
-            profile.Category = dto.Category;
-
-        if (!string.IsNullOrWhiteSpace(dto.Subcategory))
-            profile.Subcategory = dto.Subcategory;
-
-        if (!string.IsNullOrWhiteSpace(dto.ProfileImageUrl))
-            profile.ProfileImageUrl = dto.ProfileImageUrl;
-
-        if (dto.PricePerConsultation.HasValue)
-            profile.PricePerConsultation = dto.PricePerConsultation.Value;
-
-        await _context.SaveChangesAsync();
-        return Ok("Profile updated.");
-    }
-
-    // [Authorize(Roles = "Specialist")]
-    // [HttpPost("upload-license")]
-    // public async Task<IActionResult> UploadLicense([FromForm] UploadLicenseDto dto)
-    // {
-    //     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    //     if (userId == null) return Unauthorized();
-
-    //     var profile = await _context.Profiles
-    //         .FirstOrDefaultAsync(p => p.UserId == Guid.Parse(userId));
-
-    //     if (profile == null) return NotFound("Specialist profile not found.");
-
-    //     var fileName = $"{Guid.NewGuid()}_{dto.File.FileName}";
-    //     var path = Path.Combine("wwwroot", "licenses", fileName);
-
-    //     using (var stream = new FileStream(path, FileMode.Create))
-    //     {
-    //         await dto.File.CopyToAsync(stream);
-    //     }
-
-    //     profile.LicenseDocumentUrl = $"/licenses/{fileName}";
-    //     profile.IsApproved = false;
-
-    //     await _context.SaveChangesAsync();
-    //     return Ok("License uploaded and pending approval.");
-    // }
-
-    // [Authorize(Roles = "Specialist")]
-    // [HttpPut("paypal")]
-    // public async Task<IActionResult> SetPayPalEmail([FromBody] string email)
-    // {
-    //     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    //     if (userId == null) return Unauthorized();
-
-    //     var user = await _context.Users.FindAsync(Guid.Parse(userId));
-    //     if (user == null) return NotFound();
-
-    //     user.PayPalEmail = email;
-    //     await _context.SaveChangesAsync();
-
-    //     return Ok("PayPal email updated.");
-    // }
-
-    [Authorize(Roles = "Specialist")]
-    [HttpGet("calendar")]
-    public async Task<IActionResult> GetCalendar()
-    {
-        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var consultations = await _context.Consultations
-            .Where(c => c.SpecialistId == userId)
+        var requests = await _context.ConsultationRequests
+            .Where(r => r.SpecialistId.ToString() == userId)
+            .OrderByDescending(r => r.ScheduledAt)
             .ToListAsync();
 
-        return Ok(consultations);
-    }
+        var earnings = await _context.Consultations
+            .Where(c => c.SpecialistId.ToString() == userId && c.Status == "Completed")
+            .SumAsync(c => c.PricePaid);
 
-    [Authorize(Roles = "Specialist")]
-    [HttpPost("confirm/{id}")]
-    public async Task<IActionResult> ConfirmConsultation(Guid id)
-    {
-        var consultation = await _context.Consultations.FindAsync(id);
-        if (consultation == null) return NotFound();
-
-        consultation.IsConfirmed = true;
-        await _context.SaveChangesAsync();
-        return Ok("Consultation confirmed.");
+        return Ok(new
+        {
+            FullName = profile.FullName ?? "",
+            ProfileImageUrl = profile.ProfileImageUrl ?? "https://i.pravatar.cc/150?u=default",
+            RequestsCount = requests.Count(),
+            Earnings = earnings,
+            UpcomingConsultation = upcomingConsultation == null ? null : new
+            {
+                Date = upcomingConsultation.StartTime.ToString("MMMM dd, yyyy"),
+                Time = upcomingConsultation.StartTime.ToString("hh:mm tt"),
+                ClientName = upcomingConsultation.Client?.Profile?.FullName ?? "Unknown"
+            },
+            ConsultationRequests = requests.Select(r => new
+            {
+                r.Id,
+                Client = r.Client?.Profile?.FullName ?? "Unknown",
+                Date = r.ScheduledAt.ToString("MMMM dd, yyyy"),
+                Topic = r.Topic ?? "No details"
+            })
+        });
     }
 }
-
-

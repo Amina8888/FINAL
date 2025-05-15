@@ -8,7 +8,7 @@ export const useChatConnection = (accessToken: string) => {
 
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://your-api.com/chatHub", {
+      .withUrl("http://localhost:5085/chatHub", {
         accessTokenFactory: () => accessToken,
       })
       .withAutomaticReconnect()

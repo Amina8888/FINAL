@@ -4,6 +4,7 @@ interface Recipient {
   id: string;
   name: string;
   avatarUrl?: string;
+  conversationId: string; 
 }
 
 interface ChatContextType {
@@ -44,7 +45,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      await fetch(`https://your-api.com/api/conversations/${id}/read`, {
+      await fetch(`http://localhost:5085/api/conversations/${id}/read`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("auth_token")}`,

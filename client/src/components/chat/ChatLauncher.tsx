@@ -1,5 +1,4 @@
 import { useChat } from "@/contexts/ChatContext";
-import { useEffect, useState } from "react";
 import { MessageSquare } from "lucide-react";
 import ChatWindow from "./ChatWindow";
 

@@ -1,21 +1,29 @@
-namespace API.Models;
-
-public class Consultation
+namespace API.Models
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public class Consultation
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid SpecialistId { get; set; }
+        public User Consultant { get; set; } = null!;
+        public Guid ClientId { get; set; }
+        public User Client { get; set; } = null!;
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public decimal PricePaid { get; set; }
+        public string Status { get; set; } = "Scheduled"; // Scheduled, Completed, Canceled
+    }
 
-    public Guid SpecialistId { get; set; }
-    public Profile Specialist { get; set; } = null!;
-
-    public Guid ClientId { get; set; }
-    public User Client { get; set; } = null!;
-
-    public Guid CalendarSlotId { get; set; }
-    public CalendarSlot CalendarSlot { get; set; } = null!;
-
-    public string? MeetingUrl { get; set; } // для видеосвязи
-
-    public bool IsPaid { get; set; } = false;
-    public bool IsCompleted { get; set; } = false;
-    public bool IsConfirmed { get; set; } = false;
+    public class ConsultationRequest
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid SpecialistId { get; set; }
+        public User Consultant { get; set; } = null!;
+        public Guid ClientId { get; set; }
+        public User Client { get; set; } = null!;
+        public string Topic { get; set; } = null!;
+        public string Status { get; set; } = "Pending"; // Pending, Accepted, Rejected
+        public DateTime ScheduledAt { get; set; }
+        public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? StatusChangedAt { get; set; }
+    }
 }

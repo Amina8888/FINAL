@@ -15,6 +15,9 @@ namespace API.Data
         public DbSet<WorkExperience> WorkExperiences { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<ConsultationRequest> ConsultationRequests { get; set; }
+        public DbSet<License> Licenses { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

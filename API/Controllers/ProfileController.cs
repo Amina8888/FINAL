@@ -6,7 +6,7 @@ using API.Data;
 using API.DTOs;
 using API.Models;
 
-[Authorize]
+[Authorize(Roles = "Specialist")]
 [ApiController]
 [Route("api/[controller]")]
 public class ProfileController : ControllerBase
@@ -34,7 +34,7 @@ public class ProfileController : ControllerBase
         profile.FullName = dto.FullName;
         profile.About = dto.About ?? profile.About;
         profile.Category = dto.Category ?? profile.Category;
-        profile.Subcategory = dto.Subcategory;
+        profile.Subcategory = dto.Subcategory ?? profile.Subcategory;
         profile.ProfileImageUrl = dto.ProfileImageUrl ?? profile.ProfileImageUrl;
         profile.PricePerConsultation = dto.PricePerConsultation ?? profile.PricePerConsultation;
 
@@ -112,5 +112,33 @@ public class ProfileController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok(new { message = "Experience removed" });
+    }
+
+    [HttpPost("upload-avatar")]
+    public async Task<IActionResult> UploadAvatar(IFormFile file)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) return Unauthorized();
+
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+        var folderPath = Path.Combine("wwwroot", "avatars");
+        Directory.CreateDirectory(folderPath);
+        var filePath = Path.Combine(folderPath, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId.ToString() == userId);
+        if (profile == null) return NotFound("Profile not found");
+
+        profile.ProfileImageUrl = $"/avatars/{fileName}";
+        await _context.SaveChangesAsync();
+
+        return Ok(new { url = profile.ProfileImageUrl });
     }
 }

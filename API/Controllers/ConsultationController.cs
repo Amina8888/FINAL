@@ -43,8 +43,8 @@ public class ConsultationController : ControllerBase
         {
             SpecialistId = dto.SpecialistId,
             ClientId = client.Id,
-            CalendarSlotId = slot.Id,
-            IsPaid = false // мы подключим оплату позже
+            // CalendarSlotId = slot.Id,
+            // IsPaid = false // мы подключим оплату позже
         };
 
         _context.Consultations.Add(consultation);
@@ -53,36 +53,36 @@ public class ConsultationController : ControllerBase
         return Ok("Consultation booked.");
     }
 
-    [Authorize(Roles = "Client,Specialist")]
-    [HttpGet("my")]
-    public async Task<IActionResult> GetMyConsultations()
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var role = User.FindFirstValue(ClaimTypes.Role);
+    // [Authorize(Roles = "Client,Specialist")]
+    // [HttpGet("my")]
+    // public async Task<IActionResult> GetMyConsultations()
+    // {
+    //     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    //     var role = User.FindFirstValue(ClaimTypes.Role);
 
-        if (userId == null) return Unauthorized();
+    //     if (userId == null) return Unauthorized();
 
-        var consultationsQuery = _context.Consultations
-            .Include(c => c.CalendarSlot)
-            .Include(c => c.Specialist)
-            .Include(c => c.Client)
-            .AsQueryable();
+    //     var consultationsQuery = _context.Consultations
+    //         .Include(c => c.CalendarSlot)
+    //         .Include(c => c.Specialist)
+    //         .Include(c => c.Client)
+    //         .AsQueryable();
 
-        if (role == "Client")
-        {
-            consultationsQuery = consultationsQuery.Where(c => c.ClientId == Guid.Parse(userId));
-        }
-        else if (role == "Specialist")
-        {
-            var specialist = await _context.Profiles.FirstOrDefaultAsync(s => s.UserId == Guid.Parse(userId));
-            if (specialist == null) return BadRequest("Specialist not found.");
-            consultationsQuery = consultationsQuery.Where(c => c.SpecialistId == specialist.Id);
-        }
+    //     if (role == "Client")
+    //     {
+    //         consultationsQuery = consultationsQuery.Where(c => c.ClientId == Guid.Parse(userId));
+    //     }
+    //     else if (role == "Specialist")
+    //     {
+    //         var specialist = await _context.Profiles.FirstOrDefaultAsync(s => s.UserId == Guid.Parse(userId));
+    //         if (specialist == null) return BadRequest("Specialist not found.");
+    //         consultationsQuery = consultationsQuery.Where(c => c.SpecialistId == specialist.Id);
+    //     }
 
-        var consultations = await consultationsQuery
-            .OrderBy(c => c.CalendarSlot.StartTime)
-            .ToListAsync();
+    //     var consultations = await consultationsQuery
+    //         .OrderBy(c => c.CalendarSlot.StartTime)
+    //         .ToListAsync();
 
-        return Ok(consultations);
-    }
+    //     return Ok(consultations);
+    // }
 }

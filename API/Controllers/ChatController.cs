@@ -69,6 +69,8 @@ public class ChatController : ControllerBase
     [Authorize]
     public async Task<IActionResult> SendMessage([FromBody] SendMessageDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.ToUserId) || string.IsNullOrWhiteSpace(dto.Content))
+            return BadRequest("Missing fields");
         var fromUserId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
 
         var message = new Message
