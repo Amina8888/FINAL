@@ -3,6 +3,7 @@ using System;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250515011759_UserUpdate2")]
+    partial class UserUpdate2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,67 +88,6 @@ namespace API.Migrations
                     b.ToTable("Consultations");
                 });
 
-            modelBuilder.Entity("API.Models.Conversation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Participant1Id")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Participant1Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Participant2Id")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Participant2Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Conversations");
-                });
-
-            modelBuilder.Entity("API.Models.Message", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ConversationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("FromUserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ToUserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConversationId");
-
-                    b.ToTable("Messages");
-                });
-
             modelBuilder.Entity("API.Models.Profile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -153,24 +95,31 @@ namespace API.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("About")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Category")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FullName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("IsApproved")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("LicenseDocumentUrl")
+                        .HasColumnType("text");
+
                     b.Property<decimal>("PricePerConsultation")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("ProfileImageUrl")
+                    b.Property<string>("Resume")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Role")
@@ -330,17 +279,6 @@ namespace API.Migrations
                     b.Navigation("Specialist");
                 });
 
-            modelBuilder.Entity("API.Models.Message", b =>
-                {
-                    b.HasOne("API.Models.Conversation", "Conversation")
-                        .WithMany("Messages")
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Conversation");
-                });
-
             modelBuilder.Entity("API.Models.Profile", b =>
                 {
                     b.HasOne("API.Models.User", "User")
@@ -380,11 +318,6 @@ namespace API.Migrations
                         .IsRequired();
 
                     b.Navigation("Profile");
-                });
-
-            modelBuilder.Entity("API.Models.Conversation", b =>
-                {
-                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("API.Models.Profile", b =>

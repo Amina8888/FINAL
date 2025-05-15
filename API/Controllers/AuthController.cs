@@ -13,13 +13,13 @@ using API.Data;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AccountController : ControllerBase
+public class AuthController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly IPasswordHasher<User> _passwordHasher;
     private readonly IJwtTokenService _jwtTokenService;
 
-    public AccountController(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, IJwtTokenService jwtTokenService)
+    public AuthController(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, IJwtTokenService jwtTokenService)
     {
         _context = context;
         _passwordHasher = passwordHasher;
@@ -52,7 +52,7 @@ public class AccountController : ControllerBase
             FullName = "",
             About = "",
             Category = "",
-            Resume = "",
+            ProfileImageUrl = "",
             PricePerConsultation = 0,
             IsApproved = user.Role == "User"
         };
@@ -68,11 +68,11 @@ public class AccountController : ControllerBase
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
         if (user == null)
-            return Unauthorized("Invalid credentials.");
+            return Unauthorized(new { message = "Invalid credentials" });
 
         var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
         if (result == PasswordVerificationResult.Failed)
-            return Unauthorized("Invalid credentials.");
+            return Unauthorized(new { message = "Invalid credentials" });
 
         var token = _jwtTokenService.GenerateToken(user);
         return Ok(new { token, role = user.Role });

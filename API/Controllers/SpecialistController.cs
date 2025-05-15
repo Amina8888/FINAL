@@ -48,45 +48,42 @@ public class SpecialistController : ControllerBase
         if (!string.IsNullOrWhiteSpace(dto.Subcategory))
             profile.Subcategory = dto.Subcategory;
 
-        if (!string.IsNullOrWhiteSpace(dto.Resume))
-            profile.Resume = dto.Resume;
+        if (!string.IsNullOrWhiteSpace(dto.ProfileImageUrl))
+            profile.ProfileImageUrl = dto.ProfileImageUrl;
 
         if (dto.PricePerConsultation.HasValue)
             profile.PricePerConsultation = dto.PricePerConsultation.Value;
-
-        if (!string.IsNullOrWhiteSpace(dto.LicenseDocumentUrl))
-            profile.LicenseDocumentUrl = dto.LicenseDocumentUrl;
 
         await _context.SaveChangesAsync();
         return Ok("Profile updated.");
     }
 
-    [Authorize(Roles = "Specialist")]
-    [HttpPost("upload-license")]
-    public async Task<IActionResult> UploadLicense([FromForm] UploadLicenseDto dto)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
+    // [Authorize(Roles = "Specialist")]
+    // [HttpPost("upload-license")]
+    // public async Task<IActionResult> UploadLicense([FromForm] UploadLicenseDto dto)
+    // {
+    //     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    //     if (userId == null) return Unauthorized();
 
-        var profile = await _context.Profiles
-            .FirstOrDefaultAsync(p => p.UserId == Guid.Parse(userId));
+    //     var profile = await _context.Profiles
+    //         .FirstOrDefaultAsync(p => p.UserId == Guid.Parse(userId));
 
-        if (profile == null) return NotFound("Specialist profile not found.");
+    //     if (profile == null) return NotFound("Specialist profile not found.");
 
-        var fileName = $"{Guid.NewGuid()}_{dto.File.FileName}";
-        var path = Path.Combine("wwwroot", "licenses", fileName);
+    //     var fileName = $"{Guid.NewGuid()}_{dto.File.FileName}";
+    //     var path = Path.Combine("wwwroot", "licenses", fileName);
 
-        using (var stream = new FileStream(path, FileMode.Create))
-        {
-            await dto.File.CopyToAsync(stream);
-        }
+    //     using (var stream = new FileStream(path, FileMode.Create))
+    //     {
+    //         await dto.File.CopyToAsync(stream);
+    //     }
 
-        profile.LicenseDocumentUrl = $"/licenses/{fileName}";
-        profile.IsApproved = false;
+    //     profile.LicenseDocumentUrl = $"/licenses/{fileName}";
+    //     profile.IsApproved = false;
 
-        await _context.SaveChangesAsync();
-        return Ok("License uploaded and pending approval.");
-    }
+    //     await _context.SaveChangesAsync();
+    //     return Ok("License uploaded and pending approval.");
+    // }
 
     // [Authorize(Roles = "Specialist")]
     // [HttpPut("paypal")]

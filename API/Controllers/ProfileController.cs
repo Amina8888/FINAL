@@ -35,9 +35,8 @@ public class ProfileController : ControllerBase
         profile.About = dto.About ?? profile.About;
         profile.Category = dto.Category ?? profile.Category;
         profile.Subcategory = dto.Subcategory;
-        profile.Resume = dto.Resume ?? profile.Resume;
+        profile.ProfileImageUrl = dto.ProfileImageUrl ?? profile.ProfileImageUrl;
         profile.PricePerConsultation = dto.PricePerConsultation ?? profile.PricePerConsultation;
-        profile.LicenseDocumentUrl = dto.LicenseDocumentUrl ?? profile.LicenseDocumentUrl;
 
         await _context.SaveChangesAsync();
 

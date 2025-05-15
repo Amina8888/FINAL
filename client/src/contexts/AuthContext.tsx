@@ -1,22 +1,30 @@
-// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
-type UserRole = "guest" | "user" | "consultant";
+type UserRole = "guest" | "User" | "Specialist";
 
 interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   userRole: UserRole;
-  login: (token: string, role: UserRole) => void;
+  userId: string | null;
+  login: (token: string, role: string) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const getInitialRole = (): UserRole => {
+  const role = localStorage.getItem("user_role");
+  if (role === "User" || role === "Specialist") return role;
+  return "guest";
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("auth_token"));
-  const [userRole, setUserRole] = useState<UserRole>(() => (localStorage.getItem("user_role") as UserRole) || "guest");
+  const [userRole, setUserRole] = useState<UserRole>(getInitialRole);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (token) {
@@ -29,19 +37,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       delete axios.defaults.headers.common["Authorization"];
     }
   }, [token, userRole]);
+  
+  const login = (newToken: string, role: string) => {
+    const decoded = jwtDecode<{ sub: string }>(newToken);
+    const uid = decoded.sub;
 
-  const login = (newToken: string, role: UserRole) => {
     setToken(newToken);
-    setUserRole(role);
+    setUserId(uid);
+    setUserRole(role as UserRole);
+
+    localStorage.setItem("auth_token", newToken);
+    localStorage.setItem("user_role", role);
   };
 
   const logout = () => {
     setToken(null);
     setUserRole("guest");
+    setUserId(null);
   };
 
   return (
-    <AuthContext.Provider value={{ token, isAuthenticated: !!token, userRole, login, logout }}>
+    <AuthContext.Provider value={{ token, isAuthenticated: !!token, userRole, userId, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

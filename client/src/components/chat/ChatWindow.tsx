@@ -1,5 +1,5 @@
-import ConversationList from './ConversationList';
-import MessageThread from './MessageThread';
+import ConversationList from "./ConversationList";
+import MessageThread from "./MessageThread";
 
 const ChatWindow = ({ onClose }: { onClose: () => void }) => {
   return (

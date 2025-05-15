@@ -1,9 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import ReactDOM from "react-dom/client";
 import './index.css';
 import ProtectedRoute from './components/ProtectedRoute';
-import { AuthProvider } from "./contexts/AuthContext";
 import MainLayout from './layouts/MainLayout';
 import LandingPage from './pages/LandingPage';
 import SignUpLogin from './pages/SignUpLogin';
@@ -33,7 +31,7 @@ const App: React.FC = () => {
   <Route path="/chat" element={<ChatVideoCall />} />
 
   {/* Защищённые: user */}
-  <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+  <Route element={<ProtectedRoute allowedRoles={['User']} />}>
     <Route element={<MainLayout />}>
       <Route path="/user/dashboard" element={<UserDashboard />} />
       <Route path="/user/search" element={<ConsultantSearch />} />
@@ -46,7 +44,7 @@ const App: React.FC = () => {
   </Route>
 
   {/* Защищённые: consultant */}
-  <Route element={<ProtectedRoute allowedRoles={['consultant']} />}>
+  <Route element={<ProtectedRoute allowedRoles={['Specialist']} />}>
     <Route element={<MainLayout />}>
       <Route path="/consultant/dashboard" element={<ConsultantDashboard />} />
       <Route path="/consultant/profile" element={<MyProfile />} />
@@ -66,13 +64,5 @@ const App: React.FC = () => {
     </Router>
   );
 };
-
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
-  </React.StrictMode>
-);
 
 export default App;

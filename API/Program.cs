@@ -1,15 +1,30 @@
 using API.Data;
 using API.Models;
 using API.Services;
+using API.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+        .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(e => e.Value.Errors.Count > 0)
+                .Select(e => $"{e.Key}: {e.Value.Errors[0].ErrorMessage}")
+                .ToList();
+
+            return new BadRequestObjectResult(new { message = "Invalid data", errors });
+        };
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -20,6 +35,18 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // порт фронта
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
 builder.Services.AddAuthentication(options =>
 {
@@ -43,6 +70,8 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -53,9 +82,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseAuthentication(); // если используешь JWT
+app.UseCors();           // CORS перед аутентификацией
+app.UseAuthentication(); // для JWT
 app.UseAuthorization();
 app.MapControllers();
-app.UseStaticFiles(); // если используешь wwwroot (например, для лицензий)
+app.UseStaticFiles(); // для wwwroot
+app.MapHub<ChatHub>("/chatHub");
 
 app.Run();

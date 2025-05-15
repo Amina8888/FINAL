@@ -24,6 +24,7 @@ import React from "react";
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { Outlet } from "react-router-dom";
+import ChatLauncher from "@/components/chat/ChatLauncher";
 
 const MainLayout: React.FC = () => {
   return (
@@ -32,6 +33,7 @@ const MainLayout: React.FC = () => {
       <main className="flex-grow">
         <Outlet />
       </main>
+      <ChatLauncher />
       <Footer />
     </div>
   );

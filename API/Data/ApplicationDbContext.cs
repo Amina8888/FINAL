@@ -13,7 +13,8 @@ namespace API.Data
         public DbSet<CalendarSlot> CalendarSlots => Set<CalendarSlot>();
         public DbSet<Review> Reviews => Set<Review>();
         public DbSet<WorkExperience> WorkExperiences { get; set; }
-
+        public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,6 +28,11 @@ namespace API.Data
                 .HasOne(u => u.Profile)
                 .WithOne(p => p.User)
                 .HasForeignKey<Profile>(p => p.UserId);
+            
+            modelBuilder.Entity<Conversation>()
+                .HasMany(c => c.Messages)
+                .WithOne(m => m.Conversation)
+                .HasForeignKey(m => m.ConversationId);
         }
     }
 }

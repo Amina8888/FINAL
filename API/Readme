@@ -1,3 +1,9 @@
+amina@Amina API % dotnet ef migrations add UserUpdate   
+Build started...
+Build succeeded.
+The Entity Framework tools version '3.1.4' is older than that of the runtime '9.0.3'. Update the tools for the latest features and bug fixes. See https://aka.ms/AAc1fbw for more information.
+Done. To undo this action, use 'ef migrations remove'
+amina@Amina API % dotnet ef database update
 📌 API Спецификация для сайта онлайн-консультаций
 
 👤 Аутентификация и учётные записи

@@ -6,15 +6,15 @@ public class Profile
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
     public string Role { get; set; } = null!;
-    public string FullName { get; set; }
+    public string? FullName { get; set; }
+    public string? ProfileImageUrl { get; set; }
 
-    public string About { get; set; }
-    public string Category { get; set; }
+    public string? About { get; set; }
+    public string? Category { get; set; }
     public string? Subcategory { get; set; }
-    public string Resume { get; set; }
     public decimal PricePerConsultation { get; set; }
 
-    public string? LicenseDocumentUrl { get; set; }
+    // public string? LicenseDocumentUrl { get; set; } - need to have different model for docs
     public bool IsApproved { get; set; } = false;
     public List<WorkExperience> WorkExperiences { get; set; } = new();
 

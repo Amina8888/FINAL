@@ -9,13 +9,21 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   const { isAuthenticated, userRole } = useAuth();
   const location = useLocation();
-
+  console.log("🛡️ ProtectedRoute check:", {
+    isAuthenticated,
+    userRole,
+    allowedRoles,
+  });
   if (!isAuthenticated) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(userRole)) {
-    return <Navigate to="/unauthorized" replace />;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-600 text-lg">Access denied. Insufficient permissions.</p>
+      </div>
+    );
   }
 
   return <Outlet />;

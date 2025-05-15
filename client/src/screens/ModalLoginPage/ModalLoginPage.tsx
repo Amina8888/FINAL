@@ -5,9 +5,8 @@ import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-
-const { login } = useAuth();
-const navigate = useNavigate();
+import ResultModal from "../../components/ResultModal";
+import { useChat } from "@/contexts/ChatContext";
 
 interface ModalLoginPageProps {
   onClose?: () => void;
@@ -18,7 +17,16 @@ export const ModalLoginPage: React.FC<ModalLoginPageProps> = ({ onClose, onSwitc
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [userRole, setUserRole] = useState("");
 
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [resultMessage, setResultMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const { openChat } = useChat();
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -26,34 +34,63 @@ export const ModalLoginPage: React.FC<ModalLoginPageProps> = ({ onClose, onSwitc
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Пример запроса — замени на свой URL
       const response = await fetch("http://localhost:5085/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-  
-      if (!response.ok) throw new Error("Invalid credentials");
-  
       const data = await response.json();
-      const { token, role } = data; // предполагается, что backend возвращает токен и роль
-  
-      login(token, role); // 👈 вызываем login из контекста
-  
-      if (role === "consultant") {
-        navigate("/consultant/dashboard");
-      } else {
-        navigate("/user/dashboard");
+      if (response.status === 401) {
+        const message = typeof data === "string" ? data : data.message;
+        setIsSuccess(false);
+        setResultMessage(message || "Invalid credentials");
+        setShowResultModal(true);
+        return;
       }
   
-      onClose?.(); // Закрыть модалку после входа
+      if (!response.ok) {
+        const message = typeof data === "string" ? data : data.message;
+        setIsSuccess(false);
+        setResultMessage(message || "Login failed");
+        setShowResultModal(true);
+        return;
+      }
+  
+      const { token, role } = data;
+      login(token, role);
+      setUserRole(role);
+
+      setIsSuccess(true);
+      setResultMessage("Login successful!");
+      setShowResultModal(true);
+      openChat();
     } catch (error: any) {
-      alert(error.message || "Login failed");
+      setIsSuccess(false);
+      setResultMessage(error.message || "Login failed");
+      setShowResultModal(true);
+    }
+  };
+  
+  const handleResultModalClose = () => {
+    setShowResultModal(false);
+    if (isSuccess) {
+      onClose?.();
+      navigate(userRole === "Specialist" ? "/consultant/dashboard" : "/user/dashboard");
     }
   };
 
   return (
     <div className="flex items-center justify-center">
+      {showResultModal && (
+        <ResultModal
+          title={isSuccess ? "Login Successful" : "Login Failed"}
+          isSuccess={isSuccess}
+          message={resultMessage}
+          buttonText={isSuccess ? "Continue" : "Try Again"}
+          onClose={handleResultModalClose}
+        />
+      )}
+
       <Card className="
       w-full
       max-w-[90vw]
