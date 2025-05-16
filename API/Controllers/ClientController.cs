@@ -24,7 +24,7 @@ public class ClientController : ControllerBase
     public async Task<IActionResult> GetSpecialists()
     {
         var specialists = await _context.Profiles
-            .Where(u => u.Role == "Specialist" && u.IsApproved)
+            .Where(u => u.Role == "Specialist" && u.IsApproved == true)
             .Select(u => new { u.Id, u.FullName, u.About })
             .ToListAsync();
 

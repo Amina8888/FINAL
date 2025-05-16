@@ -12,6 +12,7 @@ using API.DTOs;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ConsultationController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
@@ -28,23 +29,21 @@ public class ConsultationController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null) return Unauthorized();
 
-        var client = await _context.Users.FindAsync(Guid.Parse(userId));
-        if (client == null) return BadRequest("Client not found");
-
         var slot = await _context.CalendarSlots
             .FirstOrDefaultAsync(s => s.Id == dto.CalendarSlotId && s.SpecialistId == dto.SpecialistId);
 
-        if (slot == null) return BadRequest("Slot not found.");
-        if (slot.IsBooked) return BadRequest("Slot already booked.");
+        if (slot == null || slot.IsBooked) return BadRequest("Slot is invalid or already booked.");
 
         slot.IsBooked = true;
 
         var consultation = new Consultation
         {
             SpecialistId = dto.SpecialistId,
-            ClientId = client.Id,
-            // CalendarSlotId = slot.Id,
-            // IsPaid = false // мы подключим оплату позже
+            ClientId = Guid.Parse(userId),
+            StartTime = slot.StartTime,
+            EndTime = slot.EndTime,
+            PricePaid = dto.PricePaid,
+            Status = "Scheduled"
         };
 
         _context.Consultations.Add(consultation);
@@ -53,36 +52,82 @@ public class ConsultationController : ControllerBase
         return Ok("Consultation booked.");
     }
 
-    // [Authorize(Roles = "Client,Specialist")]
-    // [HttpGet("my")]
-    // public async Task<IActionResult> GetMyConsultations()
-    // {
-    //     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    //     var role = User.FindFirstValue(ClaimTypes.Role);
+    [HttpPost("cancel/{id}")]
+    public async Task<IActionResult> CancelConsultation(Guid id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var role = User.FindFirstValue(ClaimTypes.Role);
 
-    //     if (userId == null) return Unauthorized();
+        var consultation = await _context.Consultations.FirstOrDefaultAsync(c => c.Id == id);
+        if (consultation == null || consultation.Status != "Scheduled")
+            return BadRequest("Consultation not found or already canceled.");
 
-    //     var consultationsQuery = _context.Consultations
-    //         .Include(c => c.CalendarSlot)
-    //         .Include(c => c.Specialist)
-    //         .Include(c => c.Client)
-    //         .AsQueryable();
+        if ((consultation.StartTime - DateTime.UtcNow).TotalHours < 24)
+            return BadRequest("Cannot cancel within 24 hours of start.");
 
-    //     if (role == "Client")
-    //     {
-    //         consultationsQuery = consultationsQuery.Where(c => c.ClientId == Guid.Parse(userId));
-    //     }
-    //     else if (role == "Specialist")
-    //     {
-    //         var specialist = await _context.Profiles.FirstOrDefaultAsync(s => s.UserId == Guid.Parse(userId));
-    //         if (specialist == null) return BadRequest("Specialist not found.");
-    //         consultationsQuery = consultationsQuery.Where(c => c.SpecialistId == specialist.Id);
-    //     }
+        if (
+            (role == "Client" && consultation.ClientId.ToString() != userId) ||
+            (role == "Specialist" && consultation.SpecialistId.ToString() != userId)
+        )
+            return Forbid("You are not authorized to cancel this consultation.");
 
-    //     var consultations = await consultationsQuery
-    //         .OrderBy(c => c.CalendarSlot.StartTime)
-    //         .ToListAsync();
+        consultation.Status = "Canceled";
+        await _context.SaveChangesAsync();
 
-    //     return Ok(consultations);
-    // }
+        return Ok(new { message = "Consultation canceled." });
+    }
+
+    [HttpPost("reschedule/{id}")]
+    public async Task<IActionResult> RescheduleConsultation(Guid id, [FromBody] DateTime newTime)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var role = User.FindFirstValue(ClaimTypes.Role);
+
+        var consultation = await _context.Consultations.FirstOrDefaultAsync(c => c.Id == id);
+        if (consultation == null || consultation.Status != "Scheduled")
+            return BadRequest("Consultation not found or not reschedulable.");
+
+        if ((consultation.StartTime - DateTime.UtcNow).TotalHours < 24)
+            return BadRequest("Cannot reschedule within 24 hours of start.");
+
+        if (
+            (role == "Client" && consultation.ClientId.ToString() != userId) ||
+            (role == "Specialist" && consultation.SpecialistId.ToString() != userId)
+        )
+            return Forbid("You are not authorized to reschedule this consultation.");
+
+        consultation.StartTime = newTime;
+        consultation.EndTime = newTime.AddMinutes(30); // adjust as needed
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Consultation rescheduled." });
+    }
+
+    [Authorize(Roles = "Client")]
+    [HttpPost("review/{id}")]
+    public async Task<IActionResult> LeaveReview(Guid id, [FromBody] ReviewDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var consultation = await _context.Consultations
+            .FirstOrDefaultAsync(c => c.Id == id && c.ClientId.ToString() == userId && c.Status == "Completed");
+
+        if (consultation == null)
+            return BadRequest("Consultation not found or not eligible for review.");
+
+        var review = new Review
+        {
+            Id = Guid.NewGuid(),
+            ConsultationId = dto.ConsultationId,
+            Rating = dto.Rating,
+            Text = dto.Text,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.Reviews.Add(review);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Review submitted" });
+    }
 }
+

@@ -9,7 +9,7 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Specialist")]
+
 public class ConsultantController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
@@ -19,6 +19,7 @@ public class ConsultantController : ControllerBase
         _context = context;
     }
 
+    [Authorize(Roles = "Specialist")]
     [HttpGet("dashboard")]
     public async Task<IActionResult> GetDashboard()
         {
@@ -65,4 +66,65 @@ public class ConsultantController : ControllerBase
             })
         });
     }
+
+[HttpGet("search")]
+[AllowAnonymous]
+public async Task<IActionResult> SearchSpecialists(
+    string? search = null,
+    string? specialization = null,
+    string? keyword = null,
+    decimal? minPrice = null,
+    decimal? maxPrice = null,
+    string? sortBy = "rating"
+)
+{
+    var baseQuery = _context.Profiles
+        .Include(p => p.User)
+        .Where(p => p.IsApproved == true);
+
+    if (!string.IsNullOrEmpty(search))
+        baseQuery = baseQuery.Where(p => p.FullName.Contains(search));
+
+    if (!string.IsNullOrEmpty(specialization))
+        baseQuery = baseQuery.Where(p => p.Category == specialization);
+
+    if (!string.IsNullOrEmpty(keyword))
+        baseQuery = baseQuery.Where(p => p.About.Contains(keyword));
+
+    if (minPrice.HasValue)
+        baseQuery = baseQuery.Where(p => p.PricePerConsultation >= minPrice.Value);
+
+    if (maxPrice.HasValue)
+        baseQuery = baseQuery.Where(p => p.PricePerConsultation <= maxPrice.Value);
+
+    var query = from profile in baseQuery
+                join reviewGroup in _context.Reviews
+                    .GroupBy(r => r.ConsultationId)
+                    .Select(g => new { ConsultationId = g.Key, AvgRating = g.Average(r => r.Rating) })
+                on profile.Id equals reviewGroup.ConsultationId into ratings
+                from rating in ratings.DefaultIfEmpty()
+                select new
+                {
+                    profile.Id,
+                    FullName = profile.FullName,
+                    profile.Category,
+                    profile.Subcategory,
+                    profile.PricePerConsultation,
+                    profile.ProfileImageUrl,
+                    Rating = rating != null ? rating.AvgRating : 0.0
+                };
+
+    // Сортировка
+    query = sortBy switch
+    {
+        "price" => query.OrderBy(p => p.PricePerConsultation),
+        "rating" => query.OrderByDescending(p => p.Rating),
+        _ => query.OrderByDescending(p => p.Rating)
+    };
+
+    var result = await query.ToListAsync();
+
+    return Ok(result);
+}
+
 }
