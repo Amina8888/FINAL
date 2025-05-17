@@ -4,7 +4,6 @@ import './index.css';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
 import LandingPage from './pages/LandingPage';
-import SignUpLogin from './pages/SignUpLogin';
 import UserDashboard from './pages/user/UserDashboard';
 import ConsultantSearch from './pages/user/ConsultantSearch';
 import ConsultantProfile from './pages/user/ConsultantProfile';
@@ -26,8 +25,8 @@ const App: React.FC = () => {
 <Routes>
   {/* Публичные */}
   <Route path="/" element={<LandingPage />} />
-  <Route path="/signup" element={<SignUpLogin />} />
-  <Route path="/login" element={<SignUpLogin />} />
+  {/* <Route path="/signup" element={<SignUpLogin />} />
+  <Route path="/login" element={<SignUpLogin />} /> */}
   <Route path="/chat" element={<ChatVideoCall />} />
 
   {/* Защищённые: user */}

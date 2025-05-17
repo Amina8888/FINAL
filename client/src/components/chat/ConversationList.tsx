@@ -6,18 +6,26 @@ const ConversationList = ({ fullWidth = false }: { fullWidth?: boolean }) => {
   const [conversations, setConversations] = useState<any[]>([]);
 
   useEffect(() => {
-    // TODO: API call
-    setConversations([
-      {
-        id: "4185caf8-ba7d-4381-8600-4f639c101408",
-        name: "Jane Doe",
-        avatarUrl: "https://i.pravatar.cc/40?img=1",
-        lastMessage: "Hi there!",
-        lastMessageTime: new Date().toISOString(),
-        unreadCount: 2,
-      },
-    ]);
+    const fetchConversations = async () => {
+      try {
+        const res = await fetch("http://localhost:5085/api/chat/conversations", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          },
+        });
+  
+        if (!res.ok) throw new Error("Failed to fetch conversations");
+        const data = await res.json();
+        setConversations(data);
+      } catch (err) {
+        console.error("Failed to load conversations", err);
+        setConversations([]); // fallback
+      }
+    };
+  
+    fetchConversations();
   }, []);
+  
 
   const handleOpen = async (conv: any) => {
     setRecipient({

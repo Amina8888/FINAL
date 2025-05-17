@@ -45,7 +45,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      await fetch(`http://localhost:5085/api/conversations/${id}/read`, {
+      await fetch(`http://localhost:5085/api/chat/conversations/${id}/read`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("auth_token")}`,

@@ -1,0 +1,51 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36" version="27.0.5">
+  <diagram name="ER Diagram" id="kKxRItrZJHo0mFuW5iPR">
+    <mxGraphModel dx="1200" dy="1056" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="users" value="&#xa;&#xa;&#xa;&#xa;&#xa;&#xa;Users&#xa;&#xa;- Id (PK)&#xa;- Email&#xa;- PasswordHash&#xa;- FullName&#xa;- Role" style="shape=swimlane;childLayout=stackLayout;startSize=20;fillColor=#dae8fc;verticalAlign=middle;align=center;" parent="1" vertex="1">
+          <mxGeometry x="80" y="40" width="170" height="140" as="geometry">
+            <mxRectangle x="80" y="40" width="130" height="190" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="specialists" value="&#xa;&#xa;&#xa;&#xa;&#xa;&#xa;Profile&#xa;&#xa;- UserId (PK, FK)&#xa;- Category&#xa;- Experience&#xa;- LicenseUrl&#xa;- HourlyRate" style="shape=swimlane;childLayout=stackLayout;startSize=20;fillColor=#e1d5e7;" parent="1" vertex="1">
+          <mxGeometry x="300" y="40" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="slots" value="&#xa;&#xa;&#xa;&#xa;&#xa;&#xa;CalendarSlots&#xa;&#xa;- Id (PK)&#xa;- SpecialistId (FK)&#xa;- StartTime&#xa;- EndTime&#xa;- IsBooked" style="shape=swimlane;childLayout=stackLayout;startSize=20;fillColor=#d5e8d4;" parent="1" vertex="1">
+          <mxGeometry x="560" y="40" width="180" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="consultations" value="&#xa;&#xa;&#xa;&#xa;&#xa;&#xa;&#xa;&#xa;Consultations&#xa;&#xa;- Id (PK)&#xa;- ClientId (FK)&#xa;- SpecialistId (FK)&#xa;- CalendarSlotId (FK)&#xa;- StartTime&#xa;- Status&#xa;- PricePaid" style="shape=swimlane;childLayout=stackLayout;startSize=20;fillColor=#fff2cc;" parent="1" vertex="1">
+          <mxGeometry x="220" y="240" width="220" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="messages" value="&#xa;&#xa;&#xa;&#xa;&#xa;&#xa;Messages&#xa;&#xa;- Id (PK)&#xa;- ConsultationId (FK)&#xa;- SenderId (FK)&#xa;- Text&#xa;- Timestamp" style="shape=swimlane;childLayout=stackLayout;startSize=20;fillColor=#f8cecc;" parent="1" vertex="1">
+          <mxGeometry x="500" y="255" width="200" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="payments" value="&#xa;&#xa;&#xa;&#xa;&#xa;&#xa;&#xa;Payments&#xa;&#xa;- Id (PK)&#xa;- UserId (FK)&#xa;- ConsultationId (FK)&#xa;- Amount&#xa;- Status&#xa;- TransactionId" style="shape=swimlane;childLayout=stackLayout;startSize=20;fillColor=#e1d5e7;" parent="1" vertex="1">
+          <mxGeometry x="55" y="460" width="220" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="r1" style="endArrow=block;dashed=1;" parent="1" source="specialists" target="users" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" style="endArrow=block;dashed=1;" parent="1" source="slots" target="specialists" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r3" style="endArrow=block;dashed=1;" parent="1" source="consultations" target="users" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r4" style="endArrow=block;dashed=1;" parent="1" source="consultations" target="slots" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r5" style="endArrow=block;dashed=1;" parent="1" source="messages" target="consultations" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r6" style="endArrow=block;dashed=1;" parent="1" source="payments" target="consultations" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r7" style="endArrow=block;dashed=1;" parent="1" source="payments" target="users" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

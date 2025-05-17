@@ -22,31 +22,43 @@ public class ChatController : ControllerBase
     }
 
     [HttpGet("conversations")]
-    [Authorize]
-    public async Task<IActionResult> GetConversations()
+[Authorize]
+public async Task<IActionResult> GetConversations()
+{
+    var userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
+    var conversations = await _context.Conversations
+        .Include(c => c.Messages)
+        .Where(c => c.Participant1Id == userId || c.Participant2Id == userId)
+        .ToListAsync();
+
+    var result = conversations.Select(c =>
     {
-        var userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var otherId = c.Participant1Id == userId ? c.Participant2Id : c.Participant1Id;
+        var otherName = c.Participant1Id == userId ? c.Participant2Name : c.Participant1Name;
 
-        var conversations = await _context.Conversations
-            .Include(c => c.Messages)
-            .Where(c => c.Participant1Id == userId || c.Participant2Id == userId)
-            .Select(c => new
-            {
-                c.Id,
-                Name = c.Participant1Id == userId ? c.Participant2Name : c.Participant1Name,
-                AvatarUrl = _context.Profiles
-                    .Where(p => p.UserId.ToString() == (c.Participant1Id == userId ? c.Participant2Id : c.Participant1Id))
-                    .Select(p => p.ProfileImageUrl)
-                    .FirstOrDefault() ?? 
-                    "https://i.pravatar.cc/40?u=" + (c.Participant1Id == userId ? c.Participant2Id : c.Participant1Id),
-                LastMessage = c.Messages.OrderByDescending(m => m.Timestamp).FirstOrDefault().Content,
-                LastMessageTime = c.Messages.OrderByDescending(m => m.Timestamp).FirstOrDefault().Timestamp,
-                UnreadCount = c.Messages.Count(m => !m.IsRead && m.ToUserId == userId)
-            })
-            .ToListAsync();
+        var avatar = _context.Profiles
+            .Where(p => p.UserId.ToString() == otherId)
+            .Select(p => p.ProfileImageUrl)
+            .FirstOrDefault() ?? $"https://i.pravatar.cc/40?u={otherId}";
 
-        return Ok(conversations);
-    }
+        var lastMessage = c.Messages.OrderByDescending(m => m.Timestamp).FirstOrDefault();
+
+        return new
+        {
+            c.Id,
+            OtherUserId = otherId,
+            Name = otherName,
+            AvatarUrl = avatar,
+            LastMessage = lastMessage?.Content ?? "",
+            LastMessageTime = lastMessage?.Timestamp,
+            UnreadCount = c.Messages.Count(m => !m.IsRead && m.ToUserId == userId)
+        };
+    });
+
+    return Ok(result);
+}
+
 
     [HttpPatch("conversations/{id}/read")]
     [Authorize]
@@ -96,4 +108,25 @@ public class ChatController : ControllerBase
 
         return Ok();
     }
+
+    [HttpGet("conversations/{id}/messages")]
+[Authorize]
+public async Task<IActionResult> GetMessages(Guid id)
+{
+    var userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
+    var messages = await _context.Messages
+        .Where(m => m.ConversationId == id &&
+                   (m.FromUserId == userId || m.ToUserId == userId))
+        .OrderBy(m => m.Timestamp)
+        .Select(m => new {
+            From = m.FromUserId,
+            Content = m.Content,
+            Timestamp = m.Timestamp
+        })
+        .ToListAsync();
+
+    return Ok(messages);
+}
+
 }

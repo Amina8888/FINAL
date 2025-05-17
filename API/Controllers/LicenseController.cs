@@ -59,30 +59,29 @@ public class LicenseController : ControllerBase
     }
 
     [HttpPost("upload")]
-    public async Task<IActionResult> UploadLicense([FromForm] IFormFile file, [FromForm] string? description)
+    public async Task<IActionResult> UploadLicense([FromForm] UploadLicenseDto dto)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId.ToString() == userId);
         if (profile == null) return NotFound("Profile not found");
 
-        if (file == null || file.Length == 0) return BadRequest("File is empty");
+        if (dto.File == null || dto.File.Length == 0) return BadRequest("File is empty");
 
         var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads/licenses");
         Directory.CreateDirectory(uploadsFolder);
 
-        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(dto.File.FileName)}";
         var filePath = Path.Combine(uploadsFolder, fileName);
 
         using (var stream = new FileStream(filePath, FileMode.Create))
         {
-            await file.CopyToAsync(stream);
+            await dto.File.CopyToAsync(stream);
         }
 
         var license = new License
         {
             ProfileId = profile.Id,
             FileUrl = $"/uploads/licenses/{fileName}",
-            Description = description
         };
 
         _context.Licenses.Add(license);

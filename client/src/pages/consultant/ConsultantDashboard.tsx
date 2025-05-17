@@ -15,7 +15,7 @@ const ConsultantDashboard: React.FC = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const res = await fetch('http://localhost:5085/api/consultant/dashboard', {
+        const res = await fetch('http://localhost:5085/api/consultant/dashboard?_=${Date.now()}', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -24,6 +24,8 @@ const ConsultantDashboard: React.FC = () => {
         if (!res.ok) throw new Error('Failed to load data');
 
         const data = await res.json();
+        console.log('API data:', data);
+
 
         setConsultant({
           name: data.fullName,
