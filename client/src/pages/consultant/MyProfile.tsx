@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
 import { Label } from '../../components/ui/label';
 import { Card, CardContent } from '../../components/ui/card';
-import { Upload, PlusCircle, X } from 'lucide-react';
+import { Upload, PlusCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext'; 
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 interface WorkExperience {
   id: number;
@@ -18,13 +25,15 @@ interface WorkExperience {
 const MyProfile: React.FC = () => {
   const { token, user } = useAuth();
   const [name, setName] = useState('');
-  const [email, setEmail] = useState(user?.email || '');
-  const [location, setLocation] = useState('New York, NY');
+  const email = user?.email ?? '';
   const [about, setAbout] = useState('');
   const [price, setPrice] = useState('');
   const [tags, setTags] = useState('');
   const [avatar, setAvatar] = useState<string | null>(null);
   const [category, setCategory] = useState('');
+  const [country, setCountry] = useState('USA');
+  const [city, setCity] = useState('New York');
+  const [certificateUrls, setCertificateUrls] = useState<string[]>([]);
 
   const [workExperiences, setWorkExperiences] = useState<WorkExperience[]>([{
     id: 1,
@@ -34,6 +43,57 @@ const MyProfile: React.FC = () => {
     endDate: ''
   }]);
 
+  const consultancyAreas = [
+    "Technology",
+    "Finance",
+    "Marketing",
+    "Human Resources",
+    "Operations",
+    "Strategy",
+  ];
+
+  console.log("user from useAuth:", user);
+  console.log("token from useAuth:", token);
+  useEffect(() => {
+  
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch('http://localhost:5085/api/profile/me', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCertificateUrls(data.certificateUrls || []);
+        setAvatar(data.profileImageUrl || null);
+        setName(data.fullName || '');
+        setAbout(data.about || '');
+        setCategory(data.category || '');
+        setTags(data.subcategory || '');
+        setCountry(data.country || '');
+        setCity(data.city || '');
+        setPrice(data.pricePerConsultation?.toString() || '');
+        const parsedExperiences = (data.workExperiences || []).map((we: any, index: number) => ({
+          id: we.id || index + 1,
+          company: we.company || '',
+          position: we.position || '',
+          startDate: we.description?.split(' - ')[0] || '',
+          endDate: we.description?.split(' - ')[1] || '',
+        }));
+      
+        setWorkExperiences(parsedExperiences);
+      }
+    } catch (err) {
+      console.error("Failed to load profile", err);
+    }
+  };
+
+    if (token) fetchProfile();
+  }, [token]);
+
+  
   const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -81,6 +141,8 @@ const MyProfile: React.FC = () => {
           subcategory: tags,
           profileImageUrl: avatar,
           pricePerConsultation: parseFloat(price) || 0,
+          country,
+          city,
         }),
       });
   
@@ -127,6 +189,31 @@ const MyProfile: React.FC = () => {
     setWorkExperiences(workExperiences.filter(we => we.id !== id));
   };
 
+  const handleLicenseUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+  
+    for (let i = 0; i < files.length; i++) {
+      const formData = new FormData();
+      formData.append("File", files[i]);
+  
+      const res = await fetch("http://localhost:5085/api/license/upload", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+  
+      if (res.ok) {
+        const data = await res.json();
+        setCertificateUrls((prev) => [...prev, data.url]);
+      } else {
+        console.error("Failed to upload license");
+      }
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -171,19 +258,42 @@ const MyProfile: React.FC = () => {
               />
             </div>
           </div>
-          <div className="mb-6">
-            <Label htmlFor="location">Location</Label>
-            <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} />
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
-            <Label htmlFor="category">Category</Label>
+            <Label htmlFor="country">Country</Label>
             <Input
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g. Business"
+              id="country"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              placeholder="e.g. USA"
             />
           </div>
+          <div>
+            <Label htmlFor="city">City</Label>
+            <Input
+              id="city"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="e.g. New York"
+            />
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <Label htmlFor="category">Category</Label>
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select your area of consultancy" />
+            </SelectTrigger>
+            <SelectContent>
+              {consultancyAreas.map((area) => (
+                <SelectItem key={area} value={area}>
+                  {area}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
           <h2 className="text-2xl font-semibold mb-4">About Me</h2>
           <Textarea
             value={about}
@@ -250,6 +360,20 @@ const MyProfile: React.FC = () => {
               placeholder="Enter tags separated by commas"
             />
           </div>
+          <h2 className="text-2xl font-semibold mb-4">Uploaded Certificates</h2>
+          <ul className="mb-6 space-y-2">
+            {certificateUrls.length > 0 ? (
+              certificateUrls.map((url, index) => (
+                <li key={index}>
+                  <a href={`http://localhost:5085${url}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                    {typeof url === 'string' ? url.split('/').pop() : 'Unnamed file'}
+                  </a>
+                </li>
+              ))
+            ) : (
+              <li className="text-gray-500">No certificates uploaded yet.</li>
+            )}
+          </ul>
 
           <h2 className="text-2xl font-semibold mb-4">Certificates and Licenses</h2>
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center mb-6">
@@ -257,7 +381,7 @@ const MyProfile: React.FC = () => {
               type="file"
               id="license-upload"
               className="hidden"
-              onChange={() => {}}
+              onChange={handleLicenseUpload}
               multiple
             />
             <label htmlFor="license-upload" className="cursor-pointer">

@@ -4,7 +4,7 @@ public class Profile
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid UserId { get; set; }
-    public User User { get; set; } = null!;
+    public User User { get; set; } = null!;  
     public string Role { get; set; } = null!;
     public string? FullName { get; set; }
     public string? ProfileImageUrl { get; set; }

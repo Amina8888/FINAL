@@ -37,6 +37,8 @@ public class ProfileController : ControllerBase
         profile.Subcategory = dto.Subcategory ?? profile.Subcategory;
         profile.ProfileImageUrl = dto.ProfileImageUrl ?? profile.ProfileImageUrl;
         profile.PricePerConsultation = dto.PricePerConsultation ?? profile.PricePerConsultation;
+        profile.Country = dto.Country ?? profile.Country;
+        profile.City = dto.City ?? profile.City;
 
         await _context.SaveChangesAsync();
 
@@ -141,4 +143,42 @@ public class ProfileController : ControllerBase
 
         return Ok(new { url = profile.ProfileImageUrl });
     }
+
+    [HttpGet("me")]
+    public async Task<IActionResult> GetMyProfile()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
+
+        var profile = await _context.Profiles
+            .Include(p => p.Licenses)
+            .Include(p => p.WorkExperiences)
+            .FirstOrDefaultAsync(p => p.UserId.ToString() == userId);
+
+        if (profile == null)
+            return NotFound("Profile not found");
+
+        return Ok(new
+        {
+            profile.FullName,
+            profile.About,
+            profile.ProfileImageUrl,
+            profile.Category,
+            profile.Subcategory,
+            profile.Country,
+            profile.City,
+            profile.PricePerConsultation,
+            certificateUrls = profile.Licenses.Select(l => l.FileUrl).ToList(),
+            workExperiences = profile.WorkExperiences.Select(w => new
+            {
+                w.Id,
+                w.Company,
+                w.Position,
+                w.Description,
+                w.Duration
+            })
+        });
+    }
+
 }

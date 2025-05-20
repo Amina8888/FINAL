@@ -8,6 +8,8 @@ namespace API.DTOs
         public string? Subcategory { get; set; }
         public string? ProfileImageUrl { get; set; }
         public decimal? PricePerConsultation { get; set; }
+        public string? Country { get; set; }
+        public string? City { get; set; }
         
     }
 }

@@ -33,7 +33,7 @@ public async Task<IActionResult> GetDashboard()
     var upcoming = await _context.Consultations
         .Include(c => c.Client)
         .ThenInclude(u => u.Profile)
-        .Where(c => c.SpecialistId.ToString() == userId && c.StartTime > DateTime.UtcNow)
+        .Where(c => c.SpecialistId.ToString() == userId && c.Status == "Scheduled" && c.StartTime > DateTime.UtcNow)
         .OrderBy(c => c.StartTime)
         .Take(5)
         .ToListAsync();
@@ -52,7 +52,7 @@ public async Task<IActionResult> GetDashboard()
     var requests = await _context.ConsultationRequests
         .Include(r => r.Client)
         .ThenInclude(u => u.Profile)
-        .Where(r => r.SpecialistId.ToString() == userId)
+        .Where(r => r.SpecialistId.ToString() == userId && r.Status == "Pending")
         .OrderByDescending(r => r.ScheduledAt)
         .ToListAsync();
 

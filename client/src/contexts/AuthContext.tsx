@@ -40,6 +40,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [token, userRole]);
   
+  useEffect(() => {
+    if (token) {
+      try {
+        const decoded = jwtDecode<any>(token);
+        const email = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
+        setUser({ email: email});
+      } catch (err) {
+        console.error("Invalid token:", err);
+        setUser(null);
+      }
+    }
+  }, [token]);
+
   const login = (newToken: string, role: string) => {
     const decoded = jwtDecode<{ sub: string; email: string }>(newToken);
     const uid = decoded.sub;
@@ -58,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(null);
     setUserRole("guest");
     setUserId(null);
+    setUser(null);
   };
 
   return (

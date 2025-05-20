@@ -28,7 +28,8 @@ public class UserDashboardController : ControllerBase
         Guid userGuid = Guid.Parse(userId);
 
         var upcomingConsultations = await _context.Consultations
-            .Include(c => c.Consultant)
+            .Include(c => c.Specialist)
+            .ThenInclude(s => s.Profile)
             .Where(c => c.ClientId == userGuid && c.StartTime > DateTime.UtcNow && c.Status == "Scheduled")
             .OrderBy(c => c.StartTime)
             .ToListAsync();
@@ -36,7 +37,8 @@ public class UserDashboardController : ControllerBase
         var nextConsultation = upcomingConsultations.FirstOrDefault();
 
         var previousConsultations = await _context.Consultations
-            .Include(c => c.Consultant)
+            .Include(c => c.Specialist)
+            .ThenInclude(s => s.Profile)
             .Where(c => c.ClientId == userGuid && c.StartTime < DateTime.UtcNow && c.Status == "Completed")
             .OrderByDescending(c => c.StartTime)
             .ToListAsync();
@@ -57,7 +59,7 @@ public class UserDashboardController : ControllerBase
                 nextConsultation.Id,
                 Date = nextConsultation.StartTime.ToString("MMMM dd, yyyy"),
                 Time = nextConsultation.StartTime.ToString("hh:mm tt"),
-                SpecialistName = nextConsultation.Consultant.Profile.FullName,
+                SpecialistName = nextConsultation.Specialist.Profile.FullName,
                 nextConsultation.Topic,
                 nextConsultation.PricePaid
             },
@@ -66,7 +68,7 @@ public class UserDashboardController : ControllerBase
                 c.Id,
                 Date = c.StartTime.ToString("MMMM dd, yyyy"),
                 Time = c.StartTime.ToString("hh:mm tt"),
-                SpecialistName = c.Consultant.Profile.FullName,
+                SpecialistName = c.Specialist.Profile.FullName,
                 c.Topic,
                 c.PricePaid
             }),
@@ -75,7 +77,7 @@ public class UserDashboardController : ControllerBase
                 c.Id,
                 Date = c.StartTime.ToString("MMMM dd, yyyy"),
                 Time = c.StartTime.ToString("hh:mm tt"),
-                SpecialistName = c.Consultant.Profile.FullName,
+                SpecialistName = c.Specialist.Profile.FullName,
                 c.Topic,
                 c.PricePaid
             }),

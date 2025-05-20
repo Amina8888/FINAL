@@ -1,6 +1,10 @@
+namespace API.DTOs;
+
+using API.Models;
+
 public class BookConsultationDto
 {
-    public Guid SpecialistId { get; set; }
+    public User SpecialistId { get; set; }
     public Guid CalendarSlotId { get; set; }
     public decimal PricePaid { get; set; }
 }
