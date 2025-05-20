@@ -1,31 +1,111 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRightIcon, VideoCameraIcon, UserGroupIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { User, CreditCard, Settings, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { ModalLoginPage } from '@/screens/ModalLoginPage';
 import { ModalRegisterPage } from '@/screens/ModalRegisterPage';
 
 const LandingPage: React.FC = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  const { isAuthenticated, userRole, logout } = useAuth();
+  const navigate = useNavigate();
+
+  // Закрытие дропдауна при клике вне
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen flex flex-col bg-gray-100">
       <header className="bg-white shadow">
         <nav className="container mx-auto px-6 py-3">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center relative">
             <div className="text-xl font-semibold text-gray-700">ConsultEase</div>
-            <div className="space-x-4">
-              <button
-                onClick={() => setShowLoginModal(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              >
-                Log In
-              </button>
-              <button
-                onClick={() => setShowRegisterModal(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              >
-                Sign Up
-              </button>
+
+            {/* Auth / Profile */}
+            <div className="space-x-4" ref={dropdownRef}>
+              {isAuthenticated ? (
+                <div className="relative inline-block">
+                  <button
+                    onClick={() => setIsDropdownOpen((prev) => !prev)}
+                    className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  >
+                    <User className="w-5 h-5 mr-2" />
+                    Profile
+                  </button>
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg z-50">
+                      <button
+                        onClick={() => {
+                          navigate(userRole === 'Specialist' ? '/consultant/profile' : '/user/profile');
+                          setIsDropdownOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                      >
+                        <User className="inline-block w-4 h-4 mr-2" /> Profile
+                      </button>
+
+                      {userRole === 'User' && (
+                        <button
+                          onClick={() => {
+                            navigate('/payments');
+                            setIsDropdownOpen(false);
+                          }}
+                          className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                        >
+                          <CreditCard className="inline-block w-4 h-4 mr-2" /> Payments
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          navigate('/settings');
+                          setIsDropdownOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                      >
+                        <Settings className="inline-block w-4 h-4 mr-2" /> Settings
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          logout();
+                          setIsDropdownOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                      >
+                        <LogOut className="inline-block w-4 h-4 mr-2" /> Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setShowLoginModal(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  >
+                    Log In
+                  </button>
+                  <button
+                    onClick={() => setShowRegisterModal(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  >
+                    Sign Up
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </nav>
@@ -71,36 +151,37 @@ const LandingPage: React.FC = () => {
         </section>
       </main>
 
-      <footer className="bg-gray-800 text-white mt-12">
+      <footer className="bg-gray-800 text-white mt-auto">
         <div className="container mx-auto px-6 py-4">
           <p className="text-center">&copy; 2023 ConsultEase. All rights reserved.</p>
         </div>
       </footer>
-      {/* Модальное окно логина */}
-{showLoginModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-    <ModalLoginPage
-      onClose={() => setShowLoginModal(false)}
-      onSwitchToRegister={() => {
-        setShowLoginModal(false);
-        setShowRegisterModal(true);
-      }}
-    />
-  </div>
-)}
 
-{/* Модальное окно регистрации */}
-{showRegisterModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-    <ModalRegisterPage
-      onClose={() => setShowRegisterModal(false)}
-      onSwitchToLogin={() => {
-        setShowRegisterModal(false);
-        setShowLoginModal(true);
-      }}
-    />
-  </div>
-)}
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <ModalLoginPage
+            onClose={() => setShowLoginModal(false)}
+            onSwitchToRegister={() => {
+              setShowLoginModal(false);
+              setShowRegisterModal(true);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Register Modal */}
+      {showRegisterModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <ModalRegisterPage
+            onClose={() => setShowRegisterModal(false)}
+            onSwitchToLogin={() => {
+              setShowRegisterModal(false);
+              setShowLoginModal(true);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

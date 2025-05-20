@@ -38,11 +38,21 @@ export const ModalRegisterPage = ({
 
   const consultancyAreas = [
     "Technology",
+    "Law",
+    "Health",
     "Finance",
     "Marketing",
     "Human Resources",
-    "Operations",
     "Strategy",
+    "Education",
+    "Media",
+    "Sales",
+    "Customer Service",
+    "Design",
+    "Product Management",
+    "Project Management",
+    "Business Development",
+    "Operations Management",
   ];
 
   const togglePasswordVisibility = (field: "password" | "confirmPassword") => {

@@ -36,6 +36,12 @@ namespace API.Data
                 .HasMany(c => c.Messages)
                 .WithOne(m => m.Conversation)
                 .HasForeignKey(m => m.ConversationId);
+            
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Specialist)
+                .WithMany()
+                .HasForeignKey(r => r.SpecialistId);
+
         }
     }
 }

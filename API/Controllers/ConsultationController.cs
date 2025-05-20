@@ -105,11 +105,12 @@ public class ConsultationController : ControllerBase
         return Ok(new { message = "Consultation rescheduled." });
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = "User")]
     [HttpPost("review/{id}")]
     public async Task<IActionResult> LeaveReview(Guid id, [FromBody] ReviewDto dto)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
         var consultation = await _context.Consultations
             .FirstOrDefaultAsync(c => c.Id == id && c.ClientId.ToString() == userId && c.Status == "Completed");
 
@@ -119,10 +120,12 @@ public class ConsultationController : ControllerBase
         var review = new Review
         {
             Id = Guid.NewGuid(),
-            ConsultationId = dto.ConsultationId,
+            ConsultationId = consultation.Id,
+            SpecialistId = consultation.SpecialistId,
+            ClientId = consultation.ClientId,
             Rating = dto.Rating,
             Text = dto.Text,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
 
         _context.Reviews.Add(review);

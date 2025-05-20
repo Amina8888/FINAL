@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { StarIcon } from '@heroicons/react/20/solid';
 import { Button } from '../../components/ui/button';
@@ -6,8 +6,7 @@ import { Input } from '../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { useAuth } from '@/contexts/AuthContext';
-import SlotBookingModal from "@/components/SlotBookingModal";
-
+import SlotBookingModal from '@/components/SlotBookingModal';
 
 interface Slot {
   id: string;
@@ -21,50 +20,83 @@ const ConsultantSearch: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSpecialization, setSelectedSpecialization] = useState('');
-  const [priceRange, setPriceRange] = useState([100, 0]);
+  const [priceRange, setPriceRange] = useState([0, 100]);
   const [keyword, setKeyword] = useState('');
   const [sortBy, setSortBy] = useState('rating');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedConsultant, setSelectedConsultant] = useState<any>(null);
   const [availableSlots, setAvailableSlots] = useState<Slot[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  const specializations = ['All', 'Legal', 'Human', 'Sncitane', 'Finance'];
+  const specializations = [
+    'Technology', 'Law', 'Health', 'Finance', 'Marketing',
+    'Human Resources', 'Strategy', 'Education', 'Media', 'Sales',
+    'Customer Service', 'Design', 'Product Management', 'Project Management',
+    'Business Development', 'Operations Management'
+  ];
+
+  const fetchConsultants = useCallback(async () => {
+    if (!hasMore) return;
+    setLoading(true);
+    try {
+      const query = new URLSearchParams({
+        search: searchTerm,
+        specialization: selectedSpecialization !== 'All' ? selectedSpecialization : '',
+        keyword,
+        minPrice: String(priceRange[0]),
+        maxPrice: String(priceRange[1]),
+        page: String(page),
+        limit: '10',
+      });
+
+      const res = await fetch(`http://localhost:5000/api/specialist/search?${query}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+      setConsultants(prev => [...prev, ...data]);
+      if (data.length < 10) setHasMore(false);
+    } catch (err) {
+      console.error('Failed to fetch consultants:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchTerm, selectedSpecialization, keyword, priceRange, page, token, hasMore]);
 
   useEffect(() => {
-    const fetchConsultants = async () => {
-      setLoading(true);
-      try {
-        const query = new URLSearchParams({
-          search: searchTerm,
-          specialization: selectedSpecialization !== 'All' ? selectedSpecialization : '',
-          keyword,
-          minPrice: String(Math.min(priceRange[0], priceRange[1])),
-          maxPrice: String(Math.max(priceRange[0], priceRange[1])),
-        });
+    setConsultants([]);
+    setPage(1);
+    setHasMore(true);
+  }, [searchTerm, selectedSpecialization, keyword, priceRange]);
 
-        const response = await fetch(`http://localhost:5000/api/specialists/search?${query}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+  useEffect(() => {
+    fetchConsultants();
+  }, [fetchConsultants]);
 
-        const data = await response.json();
-        setConsultants(data);
-      } catch (err) {
-        console.error('Failed to fetch consultants:', err);
-      } finally {
-        setLoading(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop + 200 >= document.documentElement.offsetHeight &&
+        !loading &&
+        hasMore
+      ) {
+        setPage(prev => prev + 1);
       }
     };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loading, hasMore]);
 
-    fetchConsultants();
-  }, [searchTerm, selectedSpecialization, keyword, priceRange, token]);
+  const debounce = (fn: any, delay: number) => {
+    let timeout: NodeJS.Timeout;
+    return (...args: any[]) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => fn(...args), delay);
+    };
+  };
 
-  const sortedConsultants = [...consultants].sort((a, b) => {
-    if (sortBy === 'rating') return b.rating - a.rating;
-    if (sortBy === 'price') return a.price - b.price;
-    return 0;
-  });
+  const handleSearchChange = debounce((value: string) => setSearchTerm(value), 500);
 
   const openBookingModal = async (consultant: any) => {
     try {
@@ -74,12 +106,11 @@ const ConsultantSearch: React.FC = () => {
       setSelectedConsultant(consultant);
       setModalOpen(true);
     } catch (err) {
-      alert('Failed to fetch available slots');
+      alert('Failed to fetch slots');
     }
   };
 
   const bookSlot = async (slotId: string) => {
-    if (!selectedConsultant) return;
     try {
       const res = await fetch('http://localhost:5000/api/consultation/book', {
         method: 'POST',
@@ -98,139 +129,78 @@ const ConsultantSearch: React.FC = () => {
         alert('Consultation booked!');
         setModalOpen(false);
       } else {
-        const msg = await res.text();
-        alert(`Booking failed: ${msg}`);
+        alert('Booking failed.');
       }
-    } catch (err) {
-      alert('Error while booking consultation');
+    } catch {
+      alert('Booking error');
     }
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8">Consultants</h1>
-
+      <h1 className="text-4xl font-bold mb-8">Consultants ({consultants.length})</h1>
       <div className="flex flex-col md:flex-row gap-8">
-        <div className="w-full md:w-1/4">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">Search</h2>
-            <Input
-              type="text"
-              placeholder="Search"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full mb-4"
-            />
-
-            <h2 className="text-xl font-semibold mb-4">Specialization</h2>
+        <div className="w-full md:w-1/4 sticky top-24 h-fit">
+          <div className="bg-white rounded-lg shadow-md p-6 animate-fade-in">
+            <Input placeholder="Search" onChange={(e) => handleSearchChange(e.target.value)} />
+            <h2 className="text-lg font-semibold mt-4">Specialization</h2>
             <Select value={selectedSpecialization} onValueChange={setSelectedSpecialization}>
-              <SelectTrigger className="w-full mb-4">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select specialization" />
               </SelectTrigger>
               <SelectContent>
-                {specializations.map((specialization) => (
-                  <SelectItem key={specialization} value={specialization}>
-                    {specialization}
-                  </SelectItem>
+                {specializations.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-
-            <h2 className="text-xl font-semibold mb-4">Price</h2>
+            <h2 className="text-xl font-semibold mb-4">Price Range ($)</h2>
             <Slider
               min={0}
-              max={100}
-              step={1}
+              max={200}
+              step={5}
               value={priceRange}
-              onValueChange={(value) => setPriceRange([value[1], value[0]])}
-              className="mb-4"
+              onValueChange={(value) => setPriceRange(value)}
+              className="mb-2"
             />
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-sm text-gray-600">
               <span>${priceRange[0]}</span>
               <span>${priceRange[1]}</span>
             </div>
-
-            <h2 className="text-xl font-semibold mb-4 mt-6">Keyword</h2>
-            <Input
-              type="text"
-              placeholder="Enter keyword"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              className="w-full"
-            />
-
-            <h2 className="text-xl font-semibold mb-4 mt-6">Sort By</h2>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full mb-4">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="rating">Rating (High to Low)</SelectItem>
-                <SelectItem value="price">Price (Low to High)</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
-        {/* Results */}
         <div className="w-full md:w-3/4">
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-6">
-              {sortedConsultants.map((consultant) => (
-                <div key={consultant.id} className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex items-center mb-4">
-                    <img
-                      src={consultant.image}
-                      alt={consultant.name}
-                      className="w-16 h-16 rounded-full mr-4 object-cover"
-                    />
-                    <div>
-                      <Link
-                        to={`/user/consultant/${consultant.id}`}
-                        className="text-xl font-semibold hover:text-blue-600"
-                      >
-                        {consultant.name}
-                      </Link>
-                      <p className="text-gray-600 text-sm">{consultant.specialization}</p>
-                      <div className="flex mt-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <StarIcon
-                            key={star}
-                            className={`h-5 w-5 ${star <= consultant.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                          />
-                        ))}
-                      </div>
+          {consultants.length === 0 && !loading && <p>No consultants found.</p>}
+          <div className="grid md:grid-cols-2 gap-6">
+            {consultants.map((consultant) => (
+              <div key={consultant.id} className="bg-white rounded-lg shadow-md p-6 animate-fade-in">
+                <div className="flex items-center mb-4">
+                  <img src={consultant.image} className="w-16 h-16 rounded-full mr-4" alt={consultant.name} />
+                  <div>
+                    <Link to={`/user/consultant/${consultant.id}`} className="font-semibold text-lg hover:text-blue-600">{consultant.name}</Link>
+                    <p className="text-sm text-gray-600">{consultant.specialization}</p>
+                    <div className="flex text-yellow-400">
+                      {[...Array(5)].map((_, i) => (
+                        <StarIcon key={i} className={`h-5 w-5 ${i < consultant.rating ? '' : 'text-gray-300'}`} />
+                      ))}
                     </div>
                   </div>
-                  <p className="text-gray-700 mb-4 text-sm">{consultant.description}</p>
-                  <p className="text-blue-700 font-semibold mb-2">Price: ${consultant.price}</p>
-                  <Button
-                    className="w-full bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() => openBookingModal(consultant)}
-                  >
-                    Book Consultation
-                  </Button>
                 </div>
-              ))}
-            </div>
-          )}
+                <p className="text-gray-700 mb-2 text-sm">{consultant.description}</p>
+                <p className="font-semibold text-blue-700 mb-2">${consultant.price}</p>
+                <Button className="w-full bg-green-600 text-white hover:bg-green-700" onClick={() => openBookingModal(consultant)}>Book Consultation</Button>
+              </div>
+            ))}
+          </div>
+          {loading && <p className="text-center mt-4">Loading more consultants...</p>}
         </div>
       </div>
-
-      {/* Modal */}
-      <SlotBookingModal
-        open={modalOpen}
-        slots={availableSlots}
-        onClose={() => setModalOpen(false)}
-        onBook={bookSlot}
-      />
+      <SlotBookingModal open={modalOpen} slots={availableSlots} onClose={() => setModalOpen(false)} onBook={bookSlot} />
     </div>
   );
 };
 
 export default ConsultantSearch;
+
 
