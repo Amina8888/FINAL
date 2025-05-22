@@ -78,20 +78,22 @@ public async Task<IActionResult> GetDashboard()
     });
 }
 
+[Authorize(Roles = "User")]
 [HttpGet("search")]
-[AllowAnonymous]
 public async Task<IActionResult> SearchSpecialists(
     string? search = null,
     string? specialization = null,
     string? keyword = null,
     decimal? minPrice = null,
     decimal? maxPrice = null,
-    string? sortBy = "rating"
+    string? sortBy = "rating",
+    int page = 1,
+    int limit = 10
 )
 {
     var baseQuery = _context.Profiles
         .Include(p => p.User)
-        .Where(p => p.IsApproved == true);
+        .Where(p => p.IsApproved == true && p.Role == "Specialist");
 
     if (!string.IsNullOrEmpty(search))
         baseQuery = baseQuery.Where(p => p.FullName.Contains(search));
@@ -108,34 +110,52 @@ public async Task<IActionResult> SearchSpecialists(
     if (maxPrice.HasValue)
         baseQuery = baseQuery.Where(p => p.PricePerConsultation <= maxPrice.Value);
 
-    var query = from profile in baseQuery
-                join reviewGroup in _context.Reviews
-                    .GroupBy(r => r.ConsultationId)
-                    .Select(g => new { ConsultationId = g.Key, AvgRating = g.Average(r => r.Rating) })
-                on profile.Id equals reviewGroup.ConsultationId into ratings
-                from rating in ratings.DefaultIfEmpty()
-                select new
-                {
-                    profile.Id,
-                    FullName = profile.FullName,
-                    profile.Category,
-                    profile.Subcategory,
-                    profile.PricePerConsultation,
-                    profile.ProfileImageUrl,
-                    Rating = rating != null ? rating.AvgRating : 0.0
-                };
+    // Paging
+    var profiles = await baseQuery
+        .Skip((page - 1) * limit)
+        .Take(limit)
+        .ToListAsync();
 
-    // Сортировка
-    query = sortBy switch
+    var userIds = profiles.Select(p => p.User.Id).ToList();
+
+    // Ratings by SpecialistId = UserId
+    var ratings = await _context.Reviews
+        .Where(r => userIds.Contains(r.SpecialistId))
+        .GroupBy(r => r.SpecialistId)
+        .Select(g => new
+        {
+            SpecialistId = g.Key,
+            AvgRating = g.Average(r => r.Rating)
+        })
+        .ToListAsync();
+
+    var result = profiles.Select(p => new
     {
-        "price" => query.OrderBy(p => p.PricePerConsultation),
-        "rating" => query.OrderByDescending(p => p.Rating),
-        _ => query.OrderByDescending(p => p.Rating)
+        p.User.Id,
+        FullName = p.FullName,
+        p.Category,
+        p.Subcategory,
+        p.PricePerConsultation,
+        p.ProfileImageUrl,
+        Rating = ratings.FirstOrDefault(r => r.SpecialistId == p.User.Id)?.AvgRating ?? 0.0
+    });
+
+    // Optional sorting
+    result = sortBy switch
+    {
+        "price" => result.OrderBy(p => p.PricePerConsultation),
+        "rating" => result.OrderByDescending(p => p.Rating),
+        _ => result
     };
 
-    var result = await query.ToListAsync();
+    var totalCount = await baseQuery.CountAsync();
 
-    return Ok(result);
+    return Ok(new
+    {
+        Items = result,
+        TotalCount = totalCount
+    });
 }
+
 
 }

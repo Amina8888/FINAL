@@ -1,47 +1,73 @@
-import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-
-interface Slot {
-  id: string;
-  startTime: string;
-  endTime: string;
-}
+import React, { useState } from 'react';
+import { Dialog } from '@headlessui/react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { Button } from './ui/button';
+import { Label } from './ui/label';
 
 interface SlotBookingModalProps {
   open: boolean;
-  slots: Slot[];
   onClose: () => void;
-  onBook: (slotId: string) => void;
+  onBook: (datetime: Date, topic: string) => void;
 }
 
-const SlotBookingModal: React.FC<SlotBookingModalProps> = ({ open, slots, onClose, onBook }) => {
+const SlotBookingModal: React.FC<SlotBookingModalProps> = ({ open, onClose, onBook }) => {
+  const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
+  const [topic, setTopic] = useState('');
+
+  const handleConfirm = () => {
+    if (!selectedDateTime) {
+      alert("Please select a date and time");
+      return;
+    }
+
+    if (!topic.trim()) {
+      alert("Please enter a topic");
+      return;
+    }
+
+    onBook(selectedDateTime, topic);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Select a Time Slot</DialogTitle>
-        </DialogHeader>
+    <Dialog open={open} onClose={onClose} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <Dialog.Panel className="bg-white p-6 rounded-lg w-full max-w-md">
+        <Dialog.Title className="text-lg font-semibold mb-4">Book Consultation</Dialog.Title>
 
-        {slots.length === 0 ? (
-          <p className="text-sm text-gray-600">No available slots</p>
-        ) : (
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {slots.map((slot) => (
-              <div key={slot.id} className="flex justify-between items-center border px-3 py-2 rounded">
-                <span className="text-sm">
-                  {new Date(slot.startTime).toLocaleString()} — {new Date(slot.endTime).toLocaleTimeString()}
-                </span>
-                <Button size="sm" onClick={() => onBook(slot.id)}>Book</Button>
-              </div>
-            ))}
+        <div className="space-y-4">
+          <div>
+            <Label className="block text-sm font-medium text-gray-700 mb-1">Select Date and Time</Label>
+            <DatePicker
+              selected={selectedDateTime}
+              onChange={(date: Date | null) => setSelectedDateTime(date)}
+              showTimeSelect
+              timeIntervals={30}
+              dateFormat="MMMM d, yyyy h:mm aa"
+              minDate={new Date()}
+              className="w-full border px-3 py-2 rounded-md"
+              placeholderText="Choose date and time"
+            />
           </div>
-        )}
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>Close</Button>
-        </DialogFooter>
-      </DialogContent>
+          <div>
+            <Label className="block text-sm font-medium text-gray-700 mb-1">Topic</Label>
+            <input
+              type="text"
+              className="w-full border px-3 py-2 rounded-md"
+              placeholder="e.g. Legal advice, Project review"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+            />
+          </div>
+
+          <Button
+            className="w-full bg-green-600 text-white hover:bg-green-700 mt-4"
+            onClick={handleConfirm}
+          >
+            Confirm
+          </Button>
+        </div>
+      </Dialog.Panel>
     </Dialog>
   );
 };

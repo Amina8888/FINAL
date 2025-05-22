@@ -9,6 +9,7 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.0.18",
     "@microsoft/signalr": "^8.0.7",
     "@radix-ui/react-checkbox": "^1.1.2",
@@ -33,7 +34,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.15.18",
-    "@types/react": "^18.2.0",
+    "@types/react": "^18.3.21",
     "@types/react-big-calendar": "^1.16.1",
     "@types/react-datepicker": "^6.2.0",
     "@types/react-dom": "^18.2.0",

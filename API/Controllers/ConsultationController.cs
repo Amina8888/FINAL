@@ -22,35 +22,40 @@ public class ConsultationController : ControllerBase
         _context = context;
     }
 
-    // [Authorize(Roles = "Client")]
-    // [HttpPost("book")]
-    // public async Task<IActionResult> BookConsultation([FromBody] BookConsultationDto dto)
-    // {
-    //     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    //     if (userId == null) return Unauthorized();
+    [Authorize(Roles = "User")]
+    [HttpPost("book")]
+    public async Task<IActionResult> BookConsultationRequest([FromBody] BookConsultationDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
 
-    //     var slot = await _context.CalendarSlots
-    //         .FirstOrDefaultAsync(s => s.Id == dto.CalendarSlotId && s.SpecialistId == dto.SpecialistId);
+        var specialist = await _context.Users
+            .Include(u => u.Profile)
+            .FirstOrDefaultAsync(u => u.Id == dto.SpecialistId);
 
-    //     if (slot == null || slot.IsBooked) return BadRequest("Slot is invalid or already booked.");
+        if (specialist == null)
+            return NotFound("Specialist not found");
 
-    //     slot.IsBooked = true;
+        if (dto.ScheduledAt < DateTime.UtcNow)
+            return BadRequest("Cannot request consultation in the past");
 
-    //     var consultation = new Consultation
-    //     {
-    //         SpecialistId = dto.SpecialistId,
-    //         ClientId = Guid.Parse(userId),
-    //         StartTime = slot.StartTime,
-    //         EndTime = slot.EndTime,
-    //         PricePaid = dto.PricePaid,
-    //         Status = "Scheduled"
-    //     };
+        var request = new ConsultationRequest
+        {
+            Id = Guid.NewGuid(),
+            ClientId = Guid.Parse(userId),
+            SpecialistId = dto.SpecialistId,
+            ScheduledAt = dto.ScheduledAt,
+            Topic = dto.Topic ?? "General inquiry",
+            RequestedAt = DateTime.UtcNow,
+            Status = "Pending"
+        };
 
-    //     _context.Consultations.Add(consultation);
-    //     await _context.SaveChangesAsync();
+        _context.ConsultationRequests.Add(request);
+        await _context.SaveChangesAsync();
 
-    //     return Ok("Consultation booked.");
-    // }
+        return Ok(new { message = "Consultation request sent", requestId = request.Id });
+    }
+
 
     [HttpPost("cancel/{id}")]
     public async Task<IActionResult> CancelConsultation(Guid id, [FromBody] CancelDto dto)

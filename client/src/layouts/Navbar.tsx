@@ -17,11 +17,26 @@ const Navbar: React.FC = () => {
   const getNavLinks = () => {
     switch (userRole) {
       case 'User':
-        return ['Dashboard', 'My Consultations', 'Search Experts', 'Messages'];
+        return [
+          { label: 'Dashboard', path: '/user/dashboard' },
+          { label: 'My Consultations', path: '/user/consultations' },
+          { label: 'Search Experts', path: '/user/search' },
+          { label: 'Messages', path: '/user/messages' },
+        ];
       case 'Specialist':
-        return ['Dashboard', 'My Consultations', 'Schedule', 'Messages'];
+        return [
+          { label: 'Dashboard', path: '/consultant/dashboard' },
+          { label: 'My Consultations', path: '/consultant/requests' },
+          { label: 'Schedule', path: '/consultant/schedule' },
+          { label: 'Messages', path: '/consultant/messages' },
+        ];
       default:
-        return ['Home', 'About', 'Search Experts', 'Contact'];
+        return [
+          { label: 'Home', path: '/' },
+          { label: 'About', path: '/about' },
+          { label: 'Search Experts', path: '/user/search' },
+          { label: 'Contact', path: '/contact' },
+        ];
     }
   };
 
@@ -36,9 +51,9 @@ const Navbar: React.FC = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex space-x-4">
-            {navLinks.map((link) => (
-              <Link key={link} to={`/${link.toLowerCase().replace(' ', '-')}`} className="hover:text-blue-200">
-                {link}
+            {navLinks.map(({ label, path }) => (
+              <Link key={label} to={path} className="hover:text-blue-200">
+                {label}
               </Link>
             ))}
           </div>
@@ -104,14 +119,14 @@ const Navbar: React.FC = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden space-y-1 pb-4">
-            {navLinks.map((link) => (
+            {navLinks.map(({ label, path }) => (
               <Link
-                key={link}
-                to={`/${link.toLowerCase().replace(' ', '-')}`}
+                key={label}
+                to={path}
                 className="block py-2 px-2 hover:bg-blue-700 rounded"
                 onClick={toggleMenu}
               >
-                {link}
+                {label}
               </Link>
             ))}
             {!isAuthenticated ? (

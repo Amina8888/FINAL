@@ -29,6 +29,7 @@ const ConsultantSearch: React.FC = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
+
   const specializations = [
     'Technology', 'Law', 'Health', 'Finance', 'Marketing',
     'Human Resources', 'Strategy', 'Education', 'Media', 'Sales',
@@ -49,20 +50,31 @@ const ConsultantSearch: React.FC = () => {
         page: String(page),
         limit: '10',
       });
-
-      const res = await fetch(`http://localhost:5000/api/specialist/search?${query}`, {
+  
+      const res = await fetch(`http://localhost:5085/api/consultant/search?${query}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+  
+      if (!res.ok) throw new Error('Failed to fetch consultants');
 
-      const data = await res.json();
-      setConsultants(prev => [...prev, ...data]);
-      if (data.length < 10) setHasMore(false);
+      const json = await res.json();
+      console.log(json);
+      const items = json.items || [];
+      const totalCount = json.totalCount || 0;
+      console.log(items);
+  
+      setConsultants(prev => [...prev, ...items]);
+  
+      if (items.length < 10 || consultants.length + items.length >= totalCount) {
+        setHasMore(false);
+      }
     } catch (err) {
       console.error('Failed to fetch consultants:', err);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, selectedSpecialization, keyword, priceRange, page, token, hasMore]);
+  }, [searchTerm, selectedSpecialization, keyword, priceRange, page, token, hasMore, consultants.length]);
+  
 
   useEffect(() => {
     setConsultants([]);
@@ -100,7 +112,7 @@ const ConsultantSearch: React.FC = () => {
 
   const openBookingModal = async (consultant: any) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/calendar/specialist/${consultant.id}/available`);
+      const res = await fetch(`http://localhost:5085/api/calendar/specialist/${consultant.id}/available`);
       const slots = await res.json();
       setAvailableSlots(slots);
       setSelectedConsultant(consultant);
@@ -110,31 +122,33 @@ const ConsultantSearch: React.FC = () => {
     }
   };
 
-  const bookSlot = async (slotId: string) => {
+  const bookSlot = async (datetime: Date, topic: string) => {
     try {
-      const res = await fetch('http://localhost:5000/api/consultation/book', {
+      const res = await fetch('http://localhost:5085/api/consultation/book', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          calendarSlotId: slotId,
           specialistId: selectedConsultant.id,
-          pricePaid: selectedConsultant.price,
+          scheduledAt: datetime,
+          topic: topic || "General",
         }),
       });
-
+  
       if (res.ok) {
-        alert('Consultation booked!');
+        alert('Consultation request sent!');
         setModalOpen(false);
       } else {
-        alert('Booking failed.');
+        const msg = await res.text();
+        alert(`Booking failed: ${msg}`);
       }
-    } catch {
-      alert('Booking error');
+    } catch (err) {
+      alert('Error while booking consultation');
     }
-  };
+  };  
+  
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -173,30 +187,67 @@ const ConsultantSearch: React.FC = () => {
         <div className="w-full md:w-3/4">
           {consultants.length === 0 && !loading && <p>No consultants found.</p>}
           <div className="grid md:grid-cols-2 gap-6">
-            {consultants.map((consultant) => (
-              <div key={consultant.id} className="bg-white rounded-lg shadow-md p-6 animate-fade-in">
-                <div className="flex items-center mb-4">
-                  <img src={consultant.image} className="w-16 h-16 rounded-full mr-4" alt={consultant.name} />
-                  <div>
-                    <Link to={`/user/consultant/${consultant.id}`} className="font-semibold text-lg hover:text-blue-600">{consultant.name}</Link>
-                    <p className="text-sm text-gray-600">{consultant.specialization}</p>
-                    <div className="flex text-yellow-400">
-                      {[...Array(5)].map((_, i) => (
-                        <StarIcon key={i} className={`h-5 w-5 ${i < consultant.rating ? '' : 'text-gray-300'}`} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <p className="text-gray-700 mb-2 text-sm">{consultant.description}</p>
-                <p className="font-semibold text-blue-700 mb-2">${consultant.price}</p>
-                <Button className="w-full bg-green-600 text-white hover:bg-green-700" onClick={() => openBookingModal(consultant)}>Book Consultation</Button>
-              </div>
-            ))}
+          {consultants.map((consultant) => (
+  <div key={consultant.id} className="bg-white rounded-lg shadow-md p-6 animate-fade-in">
+    <div className="flex items-center justify-between mb-4">
+      {/* Левый блок с фото и текстом */}
+      <div className="flex items-center gap-4">
+        <img
+          src={consultant.profileImageUrl}
+          alt={consultant.fullName}
+          className="w-16 h-16 rounded-full object-cover border"
+        />
+        <div>
+          <Link
+            to={`/user/consultant/${consultant.id}`}
+            className="text-lg font-semibold text-gray-900 hover:text-blue-600"
+          >
+            {consultant.fullName || 'Unnamed'}
+          </Link>
+          <p className="text-sm text-gray-600">
+            {consultant.category || 'No category'}
+            {consultant.subcategory && ` • ${consultant.subcategory}`}
+          </p>
+        </div>
+      </div>
+
+      {/* Правый блок с ценой и рейтингом */}
+      <div className="text-right">
+        <p className="text-blue-700 font-semibold text-lg mb-1">${consultant.pricePerConsultation}</p>
+        <div className="flex justify-end text-yellow-400">
+          {[...Array(5)].map((_, i) => (
+            <StarIcon
+              key={i}
+              className={`h-5 w-5 ${i < Math.round(consultant.rating || 0) ? '' : 'text-gray-300'}`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* Описание */}
+    {consultant.description && (
+      <p className="text-gray-700 text-sm mb-4">{consultant.description}</p>
+    )}
+
+    <Button
+      className="w-full bg-green-600 text-white hover:bg-green-700"
+      onClick={() => openBookingModal(consultant)}
+    >
+      Book Consultation
+    </Button>
+      </div>
+      ))}
+
           </div>
           {loading && <p className="text-center mt-4">Loading more consultants...</p>}
         </div>
       </div>
-      <SlotBookingModal open={modalOpen} slots={availableSlots} onClose={() => setModalOpen(false)} onBook={bookSlot} />
+      <SlotBookingModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onBook={bookSlot}
+      />
     </div>
   );
 };

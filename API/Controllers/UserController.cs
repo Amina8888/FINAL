@@ -40,7 +40,7 @@ public class UserController : ControllerBase
         var myRequests = await _context.ConsultationRequests
             .Include(r => r.Specialist)
             .ThenInclude(s => s.Profile)
-            .Where(r => r.ClientId.ToString() == userId)
+            .Where(r => r.ClientId.ToString() == userId && r.Status == "Pending")
             .OrderByDescending(r => r.RequestedAt)
             .ToListAsync();
 
