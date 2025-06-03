@@ -8,4 +8,18 @@ export default defineConfig({
   css: {
     postcss: './postcss.config.js',
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5085',
+        changeOrigin: true,
+      },
+      '/videoCallHub': {
+        target: 'http://localhost:5085',
+        ws: true, // ВАЖНО для WebSocket
+        changeOrigin: true,
+      },
+    },
+    allowedHosts: ['.ngrok-free.app'],
+  },
 })

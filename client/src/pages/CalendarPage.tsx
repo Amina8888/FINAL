@@ -39,7 +39,7 @@ const CalendarPage: React.FC = () => {
   useEffect(() => {
     const fetchConsultations = async () => {
       try {
-        const res = await fetch('http://localhost:5085/api/consultant/dashboard', {
+        const res = await fetch('/api/consultant/dashboard', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

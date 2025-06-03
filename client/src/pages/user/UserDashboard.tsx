@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import StartCallButton from '@/components/StartCallButton';
 
 
 const UserDashboard: React.FC = () => {
@@ -27,7 +28,7 @@ const UserDashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const res = await fetch('http://localhost:5085/api/user/dashboard', {
+      const res = await fetch('/api/user/dashboard', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Failed to load data');
@@ -43,6 +44,7 @@ const UserDashboard: React.FC = () => {
       setUpcomingConsultations(data.upcomingConsultations || []);
       setPreviousConsultations(data.pastConsultations || []);
       setPendingRequests(data.myRequests || []);
+      console.log(data);
     } catch (err) {
       console.error('Dashboard error', err);
     }
@@ -59,7 +61,7 @@ const UserDashboard: React.FC = () => {
   const handleCancel = async () => {
     if (!cancelingId || !cancelReason.trim()) return;
     try {
-      const res = await fetch(`http://localhost:5085/api/consultation/cancel/${cancelingId}`, {
+      const res = await fetch(`/api/consultation/cancel/${cancelingId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ reason: cancelReason })
@@ -79,7 +81,7 @@ const UserDashboard: React.FC = () => {
   const handleReviewSubmit = async () => {
     if (!reviewingId || !reviewText.trim()) return;
     try {
-      const res = await fetch(`http://localhost:5085/api/consultation/review/${reviewingId}`, {
+      const res = await fetch(`/api/consultation/review/${reviewingId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ rating, text: reviewText }),
@@ -122,8 +124,26 @@ const UserDashboard: React.FC = () => {
             <CalendarIcon className="w-8 h-8 text-blue-500 mr-2" />
             <h2 className="text-xl font-semibold">Next Consultation</h2>
           </div>
-          <p className="text-2xl font-bold">{nextConsultation?.date || 'N/A'}</p>
-          <p className="text-xl">{nextConsultation?.time || ''}</p>
+          {nextConsultation?.scheduledAt ? (
+            <>
+              <p className="text-2xl font-bold">
+                {new Date(nextConsultation.scheduledAt).toLocaleDateString('en-US', {
+                  timeZone: 'Asia/Aqtobe', // или оставить пусто — будет локальное
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+              <p className="text-xl">
+                {new Date(nextConsultation.scheduledAt).toLocaleTimeString('en-US', {
+                  timeZone: 'Asia/Aqtobe',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
+                })}
+              </p>
+            </>
+          ) : <p className="text-xl">N/A</p>}
         </div>
         <div className="bg-green-100 p-6 rounded-lg">
           <div className="flex items-center mb-4">
@@ -150,16 +170,26 @@ const UserDashboard: React.FC = () => {
               <div className="text-gray-500">No upcoming consultations</div>
             ) : (
               upcomingConsultations.map((item) => {
-                const minutesDiff = (new Date(`${item.date} ${item.time}`).getTime() - now.getTime()) / 60000;
+                const minutesDiff = (new Date(item.scheduledAt).getTime() - now.getTime()) / 60000;
                 return (
                   <div key={item.id} className="bg-white p-4 rounded-lg shadow">
                     <p className="text-lg font-semibold">{item.specialistName}</p>
-                    <p className="text-sm text-gray-600">{item.date} at {item.time}</p>
+                    <p className="text-sm text-gray-600">
+                      {new Date(item.scheduledAt).toLocaleString('en-US', {
+                        timeZone: 'Asia/Aqtobe',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}
+                    </p>
                     <p className="text-sm text-gray-500 italic mt-1">{item.topic}</p>
                     <div className="flex gap-2 mt-3 justify-end">
                       <Button variant="destructive" onClick={() => setCancelingId(item.id)}>Cancel</Button>
                       {minutesDiff <= 5 && minutesDiff >= -60 && (
-                        <Button onClick={() => handleJoin(item.id)}>Join</Button>
+                        <StartCallButton roomId={item.id} label="Join" variant="default" />
                       )}
                     </div>
                   </div>

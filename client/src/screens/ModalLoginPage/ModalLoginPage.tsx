@@ -34,7 +34,7 @@ export const ModalLoginPage: React.FC<ModalLoginPageProps> = ({ onClose, onSwitc
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5085/api/auth/login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

@@ -10,8 +10,8 @@ namespace API.Models
         public Guid ClientId { get; set; }
         public User Client { get; set; } = null!;
 
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
+        public DateTimeOffset StartTime { get; set; }
+        public DateTimeOffset EndTime { get; set; }
         public decimal PricePaid { get; set; }
         public string Topic { get; set; } = null!;
         public string Status { get; set; } = "Scheduled";
@@ -33,7 +33,7 @@ namespace API.Models
         public string Topic { get; set; } = null!;
         public string Status { get; set; } = "Pending";
         public string? RejectionReason { get; set; }
-        public DateTime ScheduledAt { get; set; }
+        public DateTimeOffset ScheduledAt { get; set; }
         public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
         public DateTime? StatusChangedAt { get; set; }
     }

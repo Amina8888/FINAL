@@ -31,7 +31,7 @@ public class UserController : ControllerBase
 
         var upcomingConsultations = await _context.Consultations
             .Include(c => c.Specialist).ThenInclude(s => s.Profile)
-            .Where(c => c.ClientId.ToString() == userId && c.Status == "Scheduled" && c.StartTime > DateTime.UtcNow)
+            .Where(c => c.ClientId.ToString() == userId && c.Status == "Scheduled" && c.StartTime > DateTime.UtcNow.AddMinutes(-59))
             .OrderBy(c => c.StartTime)
             .Take(5)
             .ToListAsync();
@@ -64,17 +64,16 @@ public class UserController : ControllerBase
             TotalConsultations = pastConsultations.Count,
             NextConsultation = upcomingConsultations.Select(c => new {
                 c.Id,
-                Date = c.StartTime.ToString("MMMM dd, yyyy"),
-                Time = c.StartTime.ToString("hh:mm tt"),
+                ScheduledAt = c.StartTime,
                 Topic = c.Topic,
                 SpecialistName = c.Specialist?.Profile?.FullName ?? "Unknown"
             }).FirstOrDefault(),
             UpcomingConsultations = upcomingConsultations.Select(c => new {
                 c.Id,
-                Date = c.StartTime.ToString("MMMM dd, yyyy"),
-                Time = c.StartTime.ToString("hh:mm tt"),
+                ScheduledAt = c.StartTime,
                 Topic = c.Topic,
-                SpecialistName = c.Specialist?.Profile?.FullName ?? "Unknown"
+                SpecialistName = c.Specialist?.Profile?.FullName ?? "Unknown",
+                SpecialistId = c.SpecialistId
             }),
             MyRequests = myRequests.Select(r => new
             {
@@ -88,8 +87,7 @@ public class UserController : ControllerBase
             PastConsultations = pastConsultations.Select(c => new
             {
                 c.Id,
-                Date = c.StartTime.ToString("MMMM dd, yyyy"),
-                Time = c.StartTime.ToString("hh:mm tt"),
+                ScheduledAt = c.StartTime,
                 Topic = c.Topic,
                 SpecialistName = c.Specialist?.Profile?.FullName ?? "Unknown",
                 CanLeaveReview = !_context.Reviews.Any(r => r.ConsultationId == c.Id) // если отзыв не оставлен

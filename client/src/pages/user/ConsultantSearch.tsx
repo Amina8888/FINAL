@@ -51,7 +51,7 @@ const ConsultantSearch: React.FC = () => {
         limit: '10',
       });
   
-      const res = await fetch(`http://localhost:5085/api/consultant/search?${query}`, {
+      const res = await fetch(`/api/consultant/search?${query}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
   
@@ -63,7 +63,10 @@ const ConsultantSearch: React.FC = () => {
       const totalCount = json.totalCount || 0;
       console.log(items);
   
-      setConsultants(prev => [...prev, ...items]);
+      setConsultants(prev => {
+        const unique = Array.from(new Map([...prev, ...items].map(c => [c.id, c])).values());
+        return unique;
+      });
   
       if (items.length < 10 || consultants.length + items.length >= totalCount) {
         setHasMore(false);
@@ -112,7 +115,7 @@ const ConsultantSearch: React.FC = () => {
 
   const openBookingModal = async (consultant: any) => {
     try {
-      const res = await fetch(`http://localhost:5085/api/calendar/specialist/${consultant.id}/available`);
+      const res = await fetch(`/api/calendar/specialist/${consultant.id}/available`);
       const slots = await res.json();
       setAvailableSlots(slots);
       setSelectedConsultant(consultant);
@@ -123,8 +126,10 @@ const ConsultantSearch: React.FC = () => {
   };
 
   const bookSlot = async (datetime: Date, topic: string) => {
+    console.log('Datettime:', datetime);
+    console.log('ISO Datetime:', datetime.toISOString());
     try {
-      const res = await fetch('http://localhost:5085/api/consultation/book', {
+      const res = await fetch('/api/consultation/book', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +137,7 @@ const ConsultantSearch: React.FC = () => {
         },
         body: JSON.stringify({
           specialistId: selectedConsultant.id,
-          scheduledAt: datetime,
+          scheduledAt: datetime.toISOString(),
           topic: topic || "General",
         }),
       });

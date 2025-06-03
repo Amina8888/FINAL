@@ -21,7 +21,7 @@ const MessageThread = () => {
     if (!currentRecipient) return;
 
     // Fetch chat history from backend
-    fetch(`http://localhost:5085/api/chat/conversations/${currentRecipient.conversationId}/messages`, {
+    fetch(`/api/chat/conversations/${currentRecipient.conversationId}/messages`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
       },
@@ -54,7 +54,7 @@ const MessageThread = () => {
   const handleSend = async () => {
     if (!currentRecipient || !message.trim()) return;
 
-    const res = await fetch("http://localhost:5085/api/chat/messages", {
+    const res = await fetch("/api/chat/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -41,7 +41,10 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // порт фронта
+        policy.WithOrigins(
+            "http://localhost:5173",
+            "https://a070-5-76-41-199.ngrok-free.app"
+            ) // порт фронта
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -68,17 +71,17 @@ builder.Services.AddAuthentication(options =>
         )
     };
 
-    // 👇 Важно для SignalR — извлекает токен из query string
+    // Важно для SignalR — извлекает токен из query string
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
             var accessToken = context.Request.Query["access_token"];
-
-            // если запрос для chatHub, разрешаем токен из query
             var path = context.HttpContext.Request.Path;
+
+            // Разрешаем токен как для chatHub, так и для videoCallHub
             if (!string.IsNullOrEmpty(accessToken) &&
-                path.StartsWithSegments("/chatHub"))
+                (path.StartsWithSegments("/chatHub") || path.StartsWithSegments("/videoCallHub")))
             {
                 context.Token = accessToken;
             }
@@ -107,5 +110,6 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseStaticFiles(); // для wwwroot
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<VideoCallHub>("/videoCallHub");
 
 app.Run();

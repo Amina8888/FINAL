@@ -58,7 +58,7 @@ const MyProfile: React.FC = () => {
   
   const fetchProfile = async () => {
     try {
-      const res = await fetch('http://localhost:5085/api/profile/me', {
+      const res = await fetch('/api/profile/me', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -109,7 +109,7 @@ const MyProfile: React.FC = () => {
     const formData = new FormData();
     formData.append("file", file);
   
-    const res = await fetch("http://localhost:5085/api/profile/upload-avatar", {
+    const res = await fetch("/api/profile/upload-avatar", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`, // если требуется авторизация
@@ -128,7 +128,7 @@ const MyProfile: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      const profileRes = await fetch('http://localhost:5085/api/profile/update', {
+      const profileRes = await fetch('/api/profile/update', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -152,7 +152,7 @@ const MyProfile: React.FC = () => {
   
       // Сохраняем work experience (по одному или массивом)
       for (const we of workExperiences) {
-        await fetch('http://localhost:5085/api/profile/work-experience', {
+        await fetch('/api/profile/work-experience', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -197,7 +197,7 @@ const MyProfile: React.FC = () => {
       const formData = new FormData();
       formData.append("File", files[i]);
   
-      const res = await fetch("http://localhost:5085/api/license/upload", {
+      const res = await fetch("/api/license/upload", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -365,7 +365,7 @@ const MyProfile: React.FC = () => {
             {certificateUrls.length > 0 ? (
               certificateUrls.map((url, index) => (
                 <li key={index}>
-                  <a href={`http://localhost:5085${url}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                  <a href={`${url}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
                     {typeof url === 'string' ? url.split('/').pop() : 'Unnamed file'}
                   </a>
                 </li>

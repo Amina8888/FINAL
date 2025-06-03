@@ -28,7 +28,7 @@ const UserProfile: React.FC = () => {
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await fetch('http://localhost:5085/api/user/upload-avatar', {
+    const res = await fetch('/api/user/upload-avatar', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -47,7 +47,7 @@ const UserProfile: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      const res = await fetch('http://localhost:5085/api/user/profile', {
+      const res = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

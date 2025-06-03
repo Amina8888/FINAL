@@ -67,8 +67,8 @@ public class ConsultationController : ControllerBase
         if (consultation == null || consultation.Status != "Scheduled")
             return BadRequest("Consultation not found or already canceled.");
 
-        if ((consultation.StartTime - DateTime.UtcNow).TotalHours < 24)
-            return BadRequest("Cannot cancel within 24 hours of start.");
+        if ((consultation.StartTime - DateTime.UtcNow).TotalHours < 8)
+            return BadRequest("Cannot cancel within 8 hours of start.");
 
         if (
             (role == "Client" && consultation.ClientId.ToString() != userId) ||
@@ -93,8 +93,8 @@ public class ConsultationController : ControllerBase
         if (consultation == null || consultation.Status != "Scheduled")
             return BadRequest("Consultation not found or not reschedulable.");
 
-        if ((consultation.StartTime - DateTime.UtcNow).TotalHours < 24)
-            return BadRequest("Cannot reschedule within 24 hours of start.");
+        if ((consultation.StartTime - DateTime.UtcNow).TotalHours < 6)
+            return BadRequest("Cannot reschedule within 6 hours of start.");
 
         if (
             (role == "Client" && consultation.ClientId.ToString() != userId) ||

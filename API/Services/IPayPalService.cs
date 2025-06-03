@@ -90,22 +90,22 @@
 
 //     }
 
-    // public async Task<bool> CapturePaymentAsync(string orderId, Guid consultationId)
-    // {
-    //     var accessToken = await GetAccessTokenAsync();
+//     public async Task<bool> CapturePaymentAsync(string orderId, Guid consultationId)
+//     {
+//         var accessToken = await GetAccessTokenAsync();
 
-    //     var request = new HttpRequestMessage(HttpMethod.Post, $"{_config["PayPal:BaseUrl"]}/v2/checkout/orders/{orderId}/capture");
-    //     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+//         var request = new HttpRequestMessage(HttpMethod.Post, $"{_config["PayPal:BaseUrl"]}/v2/checkout/orders/{orderId}/capture");
+//         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-    //     var response = await _httpClient.SendAsync(request);
-    //     if (!response.IsSuccessStatusCode) return false;
+//         var response = await _httpClient.SendAsync(request);
+//         if (!response.IsSuccessStatusCode) return false;
 
-    //     var consultation = await _context.Consultations.FindAsync(consultationId);
-    //     if (consultation == null) return false;
+//         var consultation = await _context.Consultations.FindAsync(consultationId);
+//         if (consultation == null) return false;
 
-    //     consultation.IsPaid = true;
-    //     await _context.SaveChangesAsync();
+//         consultation.IsPaid = true;
+//         await _context.SaveChangesAsync();
 
-    //     return true;
-    // }
+//         return true;
+//     }
 // }

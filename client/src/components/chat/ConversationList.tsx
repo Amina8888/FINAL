@@ -8,7 +8,7 @@ const ConversationList = ({ fullWidth = false }: { fullWidth?: boolean }) => {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const res = await fetch("http://localhost:5085/api/chat/conversations", {
+        const res = await fetch("/api/chat/conversations", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
           },

@@ -12,8 +12,7 @@ import Consultations from './pages/user/Consultations';
 import LeaveReview from './pages/user/LeaveReview';
 import ConsultantDashboard from './pages/consultant/ConsultantDashboard';
 import MyProfile from './pages/consultant/MyProfile';
-import ConsultationRequests from './pages/consultant/ConsultationRequests';
-import ChatVideoCall from './pages/ChatVideoCall';
+import VideoCallWrapper from './components/VideoCallWraper';
 import Settings from './pages/Settings';
 import Support from './pages/Support';
 import CalendarPage from './pages/CalendarPage';
@@ -24,7 +23,6 @@ const App: React.FC = () => {
 <Routes>
   {/* Публичные */}
   <Route path="/" element={<LandingPage />} />
-  <Route path="/chat" element={<ChatVideoCall />} />
 
   {/* Защищённые: user */}
   <Route element={<ProtectedRoute allowedRoles={['User']} />}>
@@ -43,7 +41,6 @@ const App: React.FC = () => {
     <Route element={<MainLayout />}>
       <Route path="/consultant/dashboard" element={<ConsultantDashboard />} />
       <Route path="/consultant/profile" element={<MyProfile />} />
-      <Route path="/consultant/requests" element={<ConsultationRequests />} />
     </Route>
   </Route>
 
@@ -53,6 +50,7 @@ const App: React.FC = () => {
       <Route path="/settings" element={<Settings />} />
       <Route path="/support" element={<Support />} />
       <Route path="/calendar" element={<CalendarPage />} />
+      <Route path="/video/:id" element={<VideoCallWrapper />} />
     </Route>
   </Route>
 </Routes>

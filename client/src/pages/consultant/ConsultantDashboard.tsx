@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { CalendarIcon, ListIcon, DollarSignIcon } from 'lucide-react';
 import { Button } from '../../components/ui/button';
+import StartCallButton from '../../components/StartCallButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { useFormattedDate } from "@/hooks/useFormattedDate";
+
 
 const ConsultantDashboard: React.FC = () => {
   const { token } = useAuth();
@@ -26,10 +29,11 @@ const ConsultantDashboard: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
 
   const now = new Date();
+  const formatDate = useFormattedDate(); 
 
   const fetchDashboardData = async () => {
     try {
-      const res = await fetch(`http://localhost:5085/api/consultant/dashboard?_=${Date.now()}`, {
+      const res = await fetch(`/api/consultant/dashboard?_=${Date.now()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -47,6 +51,7 @@ const ConsultantDashboard: React.FC = () => {
       setNextConsultation(data.nextConsultation ?? null);
       setUpcomingConsultations(data.upcomingConsultations ?? []);
       setConsultationRequests(data.consultationRequests ?? []);
+      console.log(data);
     } catch (error) {
       console.error('Dashboard fetch error:', error);
     }
@@ -63,15 +68,11 @@ const ConsultantDashboard: React.FC = () => {
       }
     }, [showToast]);
 
-  const handleJoin = (consultationId: string) => {
-    console.log("Joining consultation:", consultationId);
-  };
-
   const handleCancel = async () => {
     if (!cancelingId || !cancelReason.trim()) return;
   
     try {
-      const res = await fetch(`http://localhost:5085/api/consultation/cancel/${cancelingId}`, {
+      const res = await fetch(`/api/consultation/cancel/${cancelingId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -87,18 +88,22 @@ const ConsultantDashboard: React.FC = () => {
         setCancelingId(null);
         setCancelReason('');
       } else {
-        const err = await res.json();
-        console.error('Server error:', err);
+        const errText = await res.text(); // 👈 вместо res.json()
+        console.error('Server error:', errText);
+        setToastMessage(errText);
+        setShowToast(true);
       }
     } catch (error) {
       console.error('Cancel error:', error);
+      setToastMessage('Unexpected error while canceling.');
+      setShowToast(true);
     }
   };
   
   const handleRescheduleSave = async () => {
     if (!reschedulingId || !rescheduleDate) return;
     try {
-      const res = await fetch(`http://localhost:5085/api/consultation/reschedule/${reschedulingId}`, {
+      const res = await fetch(`/api/consultation/reschedule/${reschedulingId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +125,7 @@ const ConsultantDashboard: React.FC = () => {
 
   const handleAccept = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:5085/api/consultation/${id}/accept`, {
+      const res = await fetch(`/api/consultation/${id}/accept`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -139,7 +144,7 @@ const ConsultantDashboard: React.FC = () => {
   const handleReject = async (id: string) => {
     if (!rejectReason.trim()) return;
     try {
-      const res = await fetch(`http://localhost:5085/api/consultation/${id}/reject`, {
+      const res = await fetch(`/api/consultation/${id}/reject`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -180,8 +185,28 @@ const ConsultantDashboard: React.FC = () => {
             <CalendarIcon className="w-8 h-8 text-blue-500 mr-2" />
             <h2 className="text-xl font-semibold">Next Consultation</h2>
           </div>
-          <p className="text-2xl font-bold">{nextConsultation?.date || 'N/A'}</p>
-          <p className="text-xl">{nextConsultation?.time || ''}</p>
+          {nextConsultation?.scheduledAt ? (
+  <>
+    <p className="text-2xl font-bold">
+      {new Date(nextConsultation.scheduledAt).toLocaleDateString('en-US', {
+        timeZone: 'Asia/Aqtobe',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })}
+    </p>
+    <p className="text-xl">
+      {new Date(nextConsultation.scheduledAt).toLocaleTimeString('en-US', {
+        timeZone: 'Asia/Aqtobe',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      })}
+    </p>
+  </>
+) : (
+  <p className="text-xl">N/A</p>
+)}
         </div>
         <div className="bg-green-100 p-6 rounded-lg">
           <div className="flex items-center mb-4">
@@ -207,13 +232,23 @@ const ConsultantDashboard: React.FC = () => {
               <div className="text-gray-500">No upcoming consultations</div>
             ) : (
               upcomingConsultations.map((item) => {
-                const startTime = new Date(`${item.date} ${item.time}`);
+                const startTime = new Date(item.scheduledAt);
                 const minutesDiff = (startTime.getTime() - now.getTime()) / 60000;
 
                 return (
                   <div key={item.id} className="bg-white p-4 rounded-lg shadow">
                     <p className="text-lg font-semibold">{item.clientName}</p>
-                    <p className="text-sm text-gray-600">{item.date} at {item.time}</p>
+                    <p className="text-sm text-gray-600">
+  {new Date(item.scheduledAt).toLocaleString('en-US', {
+    timeZone: 'Asia/Aqtobe',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  })}
+</p>
                     <p className="text-sm text-gray-500 italic mt-1">{item.topic}</p>
                     <div className="flex gap-2 mt-3 justify-end">
                       <Button variant="outline" onClick={() => {
@@ -228,7 +263,10 @@ const ConsultantDashboard: React.FC = () => {
                       </Button>
 
                       {minutesDiff <= 5 && minutesDiff >= -60 && (
-                        <Button onClick={() => handleJoin(item.id)}>Join</Button>
+                        <>
+                          {console.log("item:", item)}
+                          <StartCallButton roomId={item.id} label="Join" variant="default" />
+                        </>
                       )}
                     </div>
                   </div>
@@ -245,7 +283,17 @@ const ConsultantDashboard: React.FC = () => {
               <div key={request.id} className="bg-white p-4 rounded-lg shadow">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="text-lg font-semibold">{request.clientName}</h3>
-                  <span className="text-sm text-gray-500">{request.date}</span>
+                  <span className="text-sm text-gray-500">
+                    {new Date(request.scheduledAt).toLocaleString('en-US', {
+                      timeZone: 'Asia/Aqtobe',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true,
+                    })}
+                  </span>
                 </div>
                 <p className="text-gray-700 mb-4">{request.topic}</p>
                 <div className="flex flex-col gap-2">
